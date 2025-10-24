@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Language Learning Flashcards</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Background -->
+    <div class="background">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h1>Language Learning</h1>
+                </div>
+                <div class="header-stats">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-layer-group"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-number" id="totalCards">0</span>
+                            <span class="stat-label">Total Cards</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-number" id="learnedCards">0</span>
+                            <span class="stat-label">Learned</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar-day"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-number" id="studiedToday">0</span>
+                            <span class="stat-label">Today</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-fire"></i>
+                        </div>
+                        <div class="stat-info">
+                            <span class="stat-number" id="streak">0</span>
+                            <span class="stat-label">Streak</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Navigation -->
+            <nav class="nav-tabs">
+                <button class="nav-tab active" data-tab="cards">
+                    <i class="fas fa-layer-group"></i>
+                    <span>Cards</span>
+                </button>
+                <button class="nav-tab" data-tab="quiz">
+                    <i class="fas fa-play"></i>
+                    <span>Quiz</span>
+                </button>
+                <button class="nav-tab" data-tab="dictionary">
+                    <i class="fas fa-book"></i>
+                    <span>Dictionary</span>
+                </button>
+                <button class="nav-tab" data-tab="theory">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>Theory</span>
+                </button>
+            </nav>
+
+            <!-- Cards Tab -->
+            <section class="tab-content active" id="cards-tab">
+                <div class="section-header">
+                    <h2>Your Flashcards</h2>
+                    <div class="header-actions">
+                        <div class="import-export-buttons">
+                            <button class="btn btn-secondary" id="exportCardsBtn">
+                                <i class="fas fa-download"></i>
+                                Export
+                            </button>
+                            <button class="btn btn-secondary" id="importCardsBtn">
+                                <i class="fas fa-upload"></i>
+                                Import
+                            </button>
+                            <input type="file" id="importFile" accept=".json" style="display: none;">
+                        </div>
+                        <button class="btn btn-primary" id="addCardBtn">
+                            <i class="fas fa-plus"></i>
+                            Add New Card
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Add Card Form -->
+                <div class="card-form" id="addCardForm" style="display: none;">
+                    <div class="form-header">
+                        <h3>Add New Flashcard</h3>
+                        <button class="btn-close" id="closeForm">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <form class="form" id="cardForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="cardCategory">Category</label>
+                                <select id="cardCategory" required>
+                                    <option value="words">Words</option>
+                                    <option value="phrases">Phrases</option>
+                                    <option value="sentences">Sentences</option>
+                                    <option value="texts">Long Texts</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="sourceLanguage">From</label>
+                                <select id="sourceLanguage" required>
+                                    <option value="ro">Romanian</option>
+                                    <option value="en">English</option>
+                                    <option value="it">Italian</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="targetLanguage">To</label>
+                                <select id="targetLanguage" required>
+                                    <option value="it">Italian</option>
+                                    <option value="en">English</option>
+                                    <option value="ro">Romanian</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="sourceText" id="sourceTextLabel">Text in Romanian</label>
+                            <textarea id="sourceText" placeholder="Enter the source text..." rows="2" required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="targetText" id="targetTextLabel">Text in Italian</label>
+                            <textarea id="targetText" placeholder="Enter the translation..." rows="2" required></textarea>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" id="cancelForm">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Add Card</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Cards List -->
+                <div class="cards-grid" id="cardsGrid">
+                    <div class="empty-state">
+                        <div class="empty-icon">
+                            <i class="fas fa-layer-group"></i>
+                        </div>
+                        <h3>No flashcards yet</h3>
+                        <p>Add your first flashcard to get started!</p>
+                        <button class="btn btn-primary" id="addFirstCard">
+                            <i class="fas fa-plus"></i>
+                            Add First Card
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Quiz Tab -->
+            <section class="tab-content" id="quiz-tab">
+                <div class="section-header">
+                    <h2>Learning Quiz</h2>
+                    <div class="quiz-controls">
+                        <div class="quiz-mode-selector">
+                            <label class="mode-option">
+                                <input type="radio" name="quizMode" value="typing" checked>
+                                <span class="mode-label">
+                                    <i class="fas fa-keyboard"></i>
+                                    Typing
+                                </span>
+                            </label>
+                            <label class="mode-option">
+                                <input type="radio" name="quizMode" value="multiple">
+                                <span class="mode-label">
+                                    <i class="fas fa-list"></i>
+                                    Multiple Choice
+                                </span>
+                            </label>
+                            <label class="mode-option">
+                                <input type="radio" name="quizMode" value="sentence">
+                                <span class="mode-label">
+                                    <i class="fas fa-align-left"></i>
+                                    Sentences
+                                </span>
+                            </label>
+                        </div>
+                        <button class="btn btn-primary btn-large" id="startQuizBtn">
+                            <i class="fas fa-play"></i>
+                            Start Quiz
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Quiz Content -->
+                <div class="quiz-content" id="quizContent" style="display: none;">
+                    <div class="quiz-header">
+                        <div class="quiz-progress">
+                            <span id="questionCounter">1 / 5</span>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progressFill"></div>
+                            </div>
+                        </div>
+                        <button class="btn btn-secondary" id="closeQuiz">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+
+                    <div class="question-card">
+                        <div class="question-header">
+                            <div class="question-type" id="questionType">Typing Mode</div>
+                            <div class="question-direction" id="questionDirection">Romanian → Italian</div>
+                        </div>
+                        <div class="question-text" id="questionText">Loading...</div>
+                        <div class="question-hint" id="questionHint">Translate the word above</div>
+                    </div>
+
+                    <div class="answer-section">
+                        <!-- Quiz Actions -->
+                        <div class="quiz-actions">
+                            <button class="btn btn-secondary" id="hintBtn">
+                                <i class="fas fa-lightbulb"></i>
+                                Show Hint
+                            </button>
+                        </div>
+
+                        <!-- Typing Mode -->
+                        <div class="typing-mode" id="typingMode">
+                            <div class="input-group">
+                                <input type="text" id="typingAnswer" placeholder="Type your answer here..." autocomplete="off">
+                                <button class="btn btn-primary" id="checkAnswer">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Multiple Choice Mode -->
+                        <div class="multiple-mode" id="multipleMode" style="display: none;">
+                            <div class="options-grid" id="optionsGrid">
+                                <!-- Options will be generated here -->
+                            </div>
+                        </div>
+
+                        <!-- Sentence Mode -->
+                        <div class="sentence-mode" id="sentenceMode" style="display: none;">
+                            <div class="textarea-group">
+                                <textarea id="sentenceAnswer" placeholder="Write your translation here..." rows="4"></textarea>
+                                <button class="btn btn-primary" id="checkSentence">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="feedback-section" id="feedbackSection" style="display: none;">
+                        <div class="feedback-card" id="feedbackCard">
+                            <!-- Feedback content will be inserted here -->
+                        </div>
+                        <div class="feedback-actions">
+                            <button class="btn btn-secondary" id="skipQuestion">
+                                <i class="fas fa-forward"></i>
+                                Skip
+                            </button>
+                            <button class="btn btn-primary" id="nextQuestion">
+                                <i class="fas fa-arrow-right"></i>
+                                Next Question
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quiz Start Screen -->
+                <div class="quiz-start" id="quizStart">
+                    <div class="quiz-info">
+                        <div class="info-icon">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <h3>Ready to Learn?</h3>
+                        <p>Choose your quiz mode and start practicing with your flashcards!</p>
+                        <div class="quiz-stats">
+                            <div class="stat">
+                                <span class="stat-number" id="quizTotalCards">0</span>
+                                <span class="stat-label">Cards Available</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Dictionary Tab -->
+            <section class="tab-content" id="dictionary-tab">
+                <div class="dictionary-controls">
+                    <button class="btn btn-secondary" id="exportDictionaryBtn">
+                        <i class="fas fa-file-export"></i> Export Dictionary
+                    </button>
+                    <button class="btn btn-secondary" id="importDictionaryBtn">
+                        <i class="fas fa-file-import"></i> Import Dictionary
+                    </button>
+                    <input type="file" id="importDictionaryFile" accept=".json" style="display:none">
+                </div>
+                
+                <div class="section-header">
+                    <h2>Dictionary</h2>
+                    <button class="btn btn-primary" id="addDictionaryBtn">
+                        <i class="fas fa-plus"></i>
+                        Add Word
+                    </button>
+                </div>
+
+                <div class="dictionary-content">
+                    <div class="search-section">
+                        <div class="search-box">
+                            <input type="text" id="dictionarySearch" placeholder="Search for a word...">
+                            <button class="btn btn-primary" id="searchBtn">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="dictionary-results" id="dictionaryResults">
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <h3>Search for words</h3>
+                            <p>Enter a word to see translations and definitions</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Theory Tab -->
+            <section class="tab-content" id="theory-tab">
+                <div class="section-header">
+                    <h2>Theory & Materials</h2>
+                    <button class="btn btn-primary" id="addTheoryBtn">
+                        <i class="fas fa-plus"></i>
+                        Add Material
+                    </button>
+                </div>
+
+                <div class="theory-content">
+                    <div class="theory-list" id="theoryList">
+                        <div class="empty-state">
+                            <div class="empty-icon">
+                                <i class="fas fa-graduation-cap"></i>
+                            </div>
+                            <h3>No theory materials yet</h3>
+                            <p>Add your first learning material to get started!</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- Edit Card Modal -->
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Card</h3>
+                <button class="btn-close" id="closeEditModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="editForm">
+                    <div class="form-group">
+                        <label for="editCategory">Category</label>
+                        <select id="editCategory">
+                            <option value="words">Words</option>
+                            <option value="phrases">Phrases</option>
+                            <option value="sentences">Sentences</option>
+                            <option value="texts">Long Texts</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editSourceText">Source Text</label>
+                        <textarea id="editSourceText" rows="2"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="editTargetText">Target Text</label>
+                        <textarea id="editTargetText" rows="2"></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" id="cancelEdit">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Dictionary Modal -->
+    <div class="modal" id="dictionaryModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Dictionary Entry</h3>
+                <button class="btn-close" id="closeDictionaryModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="dictionaryForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="dictSourceLang">From</label>
+                            <select id="dictSourceLang">
+                                <option value="ro">Romanian</option>
+                                <option value="en">English</option>
+                                <option value="it">Italian</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="dictTargetLang">To</label>
+                            <select id="dictTargetLang">
+                                <option value="it">Italian</option>
+                                <option value="en">English</option>
+                                <option value="ro">Romanian</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="dictSourceWord">Source Word</label>
+                        <input type="text" id="dictSourceWord" placeholder="Enter source word" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="dictTargetWord">Translation</label>
+                        <input type="text" id="dictTargetWord" placeholder="Enter translation" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="dictType">Type</label>
+                        <select id="dictType">
+                            <option value="noun">Noun</option>
+                            <option value="verb">Verb</option>
+                            <option value="adjective">Adjective</option>
+                            <option value="adverb">Adverb</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="dictDescription">Description (optional)</label>
+                        <textarea id="dictDescription" placeholder="Add a description or example" rows="2"></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" id="cancelDictionary">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add Entry</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="modal" id="editDictionaryModal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>Edit Dictionary Entry</h3>
+            <button class="close-modal" id="closeEditDictionaryModal">&times;</button>
+          </div>
+          <form id="editDictionaryForm">
+            <label>Source Language</label>
+            <select id="editDictSourceLang">
+              <option value="en">English</option>
+              <option value="ro">Romanian</option>
+              <option value="it">Italian</option>
+            </select>
+      
+            <label>Target Language</label>
+            <select id="editDictTargetLang">
+              <option value="en">English</option>
+              <option value="ro">Romanian</option>
+              <option value="it">Italian</option>
+            </select>
+      
+            <label>Source Word</label>
+            <input type="text" id="editDictSourceWord" required>
+      
+            <label>Target Word</label>
+            <input type="text" id="editDictTargetWord" required>
+      
+            <label>Type (noun, verb, etc.)</label>
+            <input type="text" id="editDictType">
+      
+            <label>Description</label>
+            <textarea id="editDictDescription" rows="3"></textarea>
+      
+            <div class="modal-actions">
+              <button type="submit" class="btn btn-primary">Save Changes</button>
+              <button type="button" class="btn btn-secondary" id="cancelEditDictionary">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+      
+
+    <!-- Add Theory Modal -->
+    <div class="modal" id="theoryModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Theory Material</h3>
+                <button class="btn-close" id="closeTheoryModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="theoryForm">
+                    <div class="form-group">
+                        <label for="theoryTitle">Title</label>
+                        <input type="text" id="theoryTitle" placeholder="Enter material title" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="theoryLanguage">Language</label>
+                        <select id="theoryLanguage">
+                            <option value="ro">Romanian</option>
+                            <option value="en">English</option>
+                            <option value="it">Italian</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="theoryDescription">Description</label>
+                        <textarea id="theoryDescription" placeholder="Enter material description" rows="4" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="theoryFile">Upload File (optional)</label>
+                        <input type="file" id="theoryFile" accept=".pdf,.doc,.docx,.txt">
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" id="cancelTheory">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add Material</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <div class="notification-content">
+            <div class="notification-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="notification-message" id="notificationMessage">Success!</div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

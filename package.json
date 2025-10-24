@@ -1,0 +1,33 @@
+{
+  "name": "flashcarduri-romana-italiana",
+  "version": "1.0.0",
+  "description": "Aplicație web pentru învățarea limbii italiene prin flashcarduri interactive",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve .",
+    "dev": "npx live-server .",
+    "build": "echo 'No build process needed for static site'",
+    "deploy": "gh-pages -d ."
+  },
+  "keywords": [
+    "flashcards",
+    "learning",
+    "italian",
+    "romanian",
+    "language",
+    "quiz",
+    "education"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "gh-pages": "^4.0.0",
+    "live-server": "^1.2.2",
+    "serve": "^14.2.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/username/flashcarduri-romana-italiana.git"
+  },
+  "homepage": "https://username.github.io/flashcarduri-romana-italiana"
+}
