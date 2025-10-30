@@ -1313,46 +1313,45 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
 
     importCards(file) {
         if (!file) return;
-
+    
         const reader = new FileReader();
         reader.onload = (e) => {
             try {
                 const data = JSON.parse(e.target.result);
                 
-                // Validate data structure
                 if (!data.cards || !Array.isArray(data.cards)) {
                     this.showNotification('Invalid file format!', 'error');
                     return;
                 }
-
-                // Confirm import
+    
                 const cardCount = data.cards.length;
                 const confirmMessage = `This will import ${cardCount} cards. This will replace all your current data. Are you sure?`;
                 
-                if (!confirm(confirmMessage)) {
-                    return;
-                }
-
-                // Import data
+                if (!confirm(confirmMessage)) return;
+    
+                // Import cards
                 this.cards = data.cards || [];
                 this.dictionary = data.dictionary || [];
                 this.theory = data.theory || [];
                 this.dailyProgress = data.dailyProgress || this.loadDailyProgress();
-
+    
+                // Auto-add each card to dictionary
+                this.cards.forEach(card => this.addDictionaryFromCard(card));
+    
                 // Save to localStorage
                 this.saveCards();
                 this.saveDictionary();
                 this.saveTheory();
                 this.saveDailyProgress();
-
+    
                 // Update UI
                 this.updateStats();
                 this.renderCards();
                 this.renderDictionary();
                 this.renderTheory();
-
-                this.showNotification(`Successfully imported ${cardCount} cards!`, 'success');
-
+    
+                this.showNotification(`Successfully imported ${cardCount} cards and updated dictionary!`, 'success');
+    
             } catch (error) {
                 console.error('Import error:', error);
                 this.showNotification('Error importing file! Please check the file format.', 'error');
@@ -1360,7 +1359,7 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
         };
         reader.readAsText(file);
     }
-
+    
     // Hint System
     showHint() {
         if (this.hintUsed || this.isAnswered) return;
