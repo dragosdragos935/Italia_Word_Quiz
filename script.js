@@ -911,7 +911,16 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
         const correctAnswer = this.currentQuestion.correctAnswer.toLowerCase();
         
         const isCorrect = this.isAnswerCorrect(userAnswer, correctAnswer);
-        this.handleAnswer(isCorrect);
+        
+        if (isCorrect) {
+            this.handleAnswer(true);
+            this.nextQuestion(); // trecem la următoarea doar dacă răspunsul e corect
+        } else {
+            this.handleAnswer(false);
+            // Răspuns greșit, rămânem pe aceeași întrebare
+            // Poți adăuga aici un mesaj de avertizare sau alte acțiuni
+            this.showNotification('Răspuns greșit. Încearcă din nou!', 'error');
+        }
     }
 
     checkSentenceAnswer() {
@@ -921,9 +930,16 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
         const correctAnswer = this.currentQuestion.correctAnswer.toLowerCase();
         
         const isCorrect = this.isAnswerCorrect(userAnswer, correctAnswer);
-        this.handleAnswer(isCorrect);
+        
+        if (isCorrect) {
+            this.handleAnswer(true);
+            this.nextQuestion(); // trecem la următoarea doar dacă răspunsul e corect
+        } else {
+            this.handleAnswer(false);
+            this.showNotification('Răspuns greșit. Încearcă din nou!', 'error');
+            // Rămânem pe aceeași întrebare
+        }
     }
-
     isAnswerCorrect(userAnswer, correctAnswer) {
         // Exact match
         if (userAnswer === correctAnswer) return true;
