@@ -905,45 +905,52 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
     }
 
     checkTypingAnswer() {
-        if (this.isAnswered) return;
-        
-        const userAnswer = document.getElementById('typingAnswer').value.trim().toLowerCase();
+        // Nu verifică dacă deja a fost răspuns corect
+        // (în cazul tău, această condiție nu trebuie să blocheze verificarea)
+        const answerInput = document.getElementById('typingAnswer');
+        const checkBtn = document.getElementById('checkAnswer');
+    
+        const userAnswer = answerInput.value.trim().toLowerCase();
         const correctAnswer = this.currentQuestion.correctAnswer.toLowerCase();
-        
         const isCorrect = this.isAnswerCorrect(userAnswer, correctAnswer);
-        
+    
         if (isCorrect) {
             this.handleAnswer(true);
-            this.nextQuestion(); // trecem la următoarea doar dacă răspunsul e corect
+            this.nextQuestion();
+            // Activează buton pentru următoarea întrebare
+            checkBtn.disabled = false;
         } else {
             this.handleAnswer(false);
-            // Răspuns greșit, rămânem pe aceeași întrebare
-            // Poți adăuga aici un mesaj de avertizare sau alte acțiuni
             this.showNotification('Răspuns greșit. Încearcă din nou!', 'error');
+            // Resetează pentru a permite o nouă verificare
+            this.isAnswered = false;
+            // Dezactivează buton dacă vrei să nu poată fi apăsat din nou imediat
+            checkBtn.disabled = false;
         }
     }
 
     checkSentenceAnswer() {
-        if (this.isAnswered) return;
-        
+        if (this.isAnswered) return; // dacă răspunsul a fost deja corect, nu verificăm din nou
+    
         const userAnswer = document.getElementById('sentenceAnswer').value.trim().toLowerCase();
         const correctAnswer = this.currentQuestion.correctAnswer.toLowerCase();
-        
+    
         const isCorrect = this.isAnswerCorrect(userAnswer, correctAnswer);
-        
+    
         if (isCorrect) {
             this.handleAnswer(true);
             this.nextQuestion(); // trecem la următoarea doar dacă răspunsul e corect
         } else {
+            // Răspuns greșit: nu schimbăm this.isAnswered
             this.handleAnswer(false);
             this.showNotification('Răspuns greșit. Încearcă din nou!', 'error');
-            // Rămânem pe aceeași întrebare
+            // rămânem pe aceeași întrebare
         }
     }
     isAnswerCorrect(userAnswer, correctAnswer) {
         // Exact match
-        if (userAnswer === correctAnswer) return true;
-        
+                if (userAnswer === correctAnswer) return true;
+
         // Remove accents and compare
         const normalize = (str) => str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
         if (normalize(userAnswer) === normalize(correctAnswer)) return true;
@@ -954,6 +961,7 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
         }
         
         return false;
+
     }
 
     handleAnswer(isCorrect) {
