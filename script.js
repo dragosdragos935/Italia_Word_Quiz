@@ -930,7 +930,8 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
     }
 
     checkSentenceAnswer() {
-        if (this.isAnswered) return; // dacă răspunsul a fost deja corect, nu verificăm din nou
+        // Pentru a permite verificarea de mai multe ori, eliminăm verificarea inițială
+        // dacă dorești, poți păstra această condiție și să o adaptezi
     
         const userAnswer = document.getElementById('sentenceAnswer').value.trim().toLowerCase();
         const correctAnswer = this.currentQuestion.correctAnswer.toLowerCase();
@@ -940,11 +941,13 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
         if (isCorrect) {
             this.handleAnswer(true);
             this.nextQuestion(); // trecem la următoarea doar dacă răspunsul e corect
+            this.isAnswered = true; // marcăm că răspunsul a fost corect pentru această întrebare
         } else {
-            // Răspuns greșit: nu schimbăm this.isAnswered
+            // Răspuns greșit: resetăm această valoare pentru a permite o nouă verificare
+            this.isAnswered = false;
             this.handleAnswer(false);
             this.showNotification('Răspuns greșit. Încearcă din nou!', 'error');
-            // rămânem pe aceeași întrebare
+            // rămânem pe aceeași întrebare și permitem o nouă încercare
         }
     }
     isAnswerCorrect(userAnswer, correctAnswer) {
