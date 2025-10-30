@@ -749,70 +749,84 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
             this.endQuiz();
             return;
         }
-
+    
         const currentCard = this.currentQuiz[this.currentQuestionIndex];
-        const isSourceToTarget = Math.random() < 0.5;
-
+    
+        // --- Preluare selecție utilizator ---
+        const sourceLang = document.getElementById('quizSourceLang').value;
+        const targetLang = document.getElementById('quizTargetLang').value;
+    
+        // --- Determinare text pentru întrebare și răspuns ---
+        let questionText, correctAnswer, directionText;
+    
+        // Dacă sursa și ținta coincid cu cardul curent
+        if (currentCard.sourceLanguage === sourceLang && currentCard.targetLanguage === targetLang) {
+            questionText = currentCard.sourceText;
+            correctAnswer = currentCard.targetText;
+            directionText = `${this.getLanguageName(sourceLang)} → ${this.getLanguageName(targetLang)}`;
+        } else if (currentCard.sourceLanguage === targetLang && currentCard.targetLanguage === sourceLang) {
+            // invers
+            questionText = currentCard.targetText;
+            correctAnswer = currentCard.sourceText;
+            directionText = `${this.getLanguageName(targetLang)} → ${this.getLanguageName(sourceLang)}`;
+        } else {
+            // dacă cardul nu are limbile selectate, aleg random ca fallback
+            const isSourceToTarget = Math.random() < 0.5;
+            questionText = isSourceToTarget ? currentCard.sourceText : currentCard.targetText;
+            correctAnswer = isSourceToTarget ? currentCard.targetText : currentCard.sourceText;
+            directionText = isSourceToTarget
+                ? `${this.getLanguageName(currentCard.sourceLanguage)} → ${this.getLanguageName(currentCard.targetLanguage)}`
+                : `${this.getLanguageName(currentCard.targetLanguage)} → ${this.getLanguageName(currentCard.sourceLanguage)}`;
+        }
+    
         // Store current question data
         this.currentQuestion = {
             card: currentCard,
-            isSourceToTarget: isSourceToTarget,
-            correctAnswer: isSourceToTarget ? currentCard.targetText : currentCard.sourceText
+            isSourceToTarget: questionText === currentCard.sourceText,
+            correctAnswer: correctAnswer
         };
-
-        // Update question display
-        const questionText = isSourceToTarget ? currentCard.sourceText : currentCard.targetText;
-        const hintText = isSourceToTarget ? 
-            `Translate to ${this.getLanguageName(currentCard.targetLanguage)}` : 
-            `Translate to ${this.getLanguageName(currentCard.sourceLanguage)}`;
-            
+    
+        // Update UI
         document.getElementById('questionText').textContent = questionText;
-        document.getElementById('questionHint').textContent = hintText;
-        
-        // Update direction display
-        const directionText = isSourceToTarget ? 
-            `${this.getLanguageName(currentCard.sourceLanguage)} → ${this.getLanguageName(currentCard.targetLanguage)}` :
-            `${this.getLanguageName(currentCard.targetLanguage)} → ${this.getLanguageName(currentCard.sourceLanguage)}`;
+        document.getElementById('questionHint').textContent = `Translate to ${this.getLanguageName(targetLang)}`;
         document.getElementById('questionDirection').textContent = directionText;
-
-        // Update quiz mode display
+    
         const modeLabels = {
             'typing': 'Typing Mode',
             'multiple': 'Multiple Choice',
             'sentence': 'Sentence Mode'
         };
         document.getElementById('questionType').textContent = modeLabels[this.quizMode] || 'Typing Mode';
-
+    
         // Reset UI state
         this.isAnswered = false;
         this.hintUsed = false;
         this.clearAnswerInputs();
         document.getElementById('feedbackSection').style.display = 'none';
-        
+    
         // Reset hint button
         const hintBtn = document.getElementById('hintBtn');
         hintBtn.classList.remove('hint-used');
         hintBtn.innerHTML = '<i class="fas fa-lightbulb"></i> Arată Hint';
         hintBtn.disabled = false;
-
+    
         // Update progress
         document.getElementById('questionCounter').textContent = `${this.currentQuestionIndex + 1} / ${this.currentQuiz.length}`;
-        const progress = ((this.currentQuestionIndex) / this.currentQuiz.length) * 100;
+        const progress = (this.currentQuestionIndex / this.currentQuiz.length) * 100;
         document.getElementById('progressFill').style.width = `${progress}%`;
-
+    
         // Show appropriate mode
         this.setQuizMode(this.quizMode);
-
+    
         // Focus on input if typing mode
         if (this.quizMode === 'typing') {
             setTimeout(() => {
                 document.getElementById('typingAnswer').focus();
             }, 100);
         }
-
+    
+        // Hint handling
         this.hintVisible = false;
-        document.getElementById('hintBtn').innerHTML = '<i class="fas fa-lightbulb"></i> Arată Hint';
-        document.getElementById('hintBtn').disabled = false;
         let hintReveal = document.getElementById('hintReveal');
         if (!hintReveal) {
             hintReveal = document.createElement('div');
@@ -822,6 +836,8 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
         hintReveal.style.display = 'none';
         hintReveal.textContent = '';
     }
+    
+    
 
     setQuizMode(mode) {
         // Hide all modes
