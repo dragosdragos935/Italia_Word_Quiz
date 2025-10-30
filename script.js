@@ -13,6 +13,9 @@ class LanguageLearningApp {
         this.correctCount = 0;
         this.wrongCount = 0;
         this.hintUsed = false;
+		this.cardsSearchQuery = '';
+		this.cardsFilters = { query: '', sort: 'recent', sourceLang: 'any', targetLang: 'any', letter: 'all', category: 'any' };
+		this.dictionaryFilters = { query: '', sort: 'recent', sourceLang: 'any', targetLang: 'any', letter: 'all' };
         
         this.init();
     }
@@ -152,6 +155,15 @@ importDictionary(file) {
         document.getElementById('addFirstCard').addEventListener('click', () => {
             this.showAddCardForm();
         });
+
+		// Cards search (live)
+		const cardsSearchEl = document.getElementById('cardsSearch');
+		if (cardsSearchEl) {
+			cardsSearchEl.addEventListener('input', () => {
+				this.cardsSearchQuery = cardsSearchEl.value.trim().toLowerCase();
+				this.renderCards();
+			});
+		}
         // Edit Dictionary Modal
 document.getElementById('closeEditDictionaryModal').addEventListener('click', () => {
     this.hideModal('editDictionaryModal');
@@ -245,10 +257,27 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
 
         // Hint button
         document.getElementById('hintBtn').addEventListener('click', () => {
-            this.showHint();
+            if (!this.currentQuestion) return;
+            const btn = document.getElementById('hintBtn');
+            let hintReveal = document.getElementById('hintReveal');
+            if (!hintReveal) {
+                hintReveal = document.createElement('div');
+                hintReveal.id = 'hintReveal';
+                document.getElementById('questionText').parentNode.appendChild(hintReveal);
+            }
+            if (this.hintVisible) {
+                hintReveal.style.display = 'none';
+                btn.innerHTML = '<i class="fas fa-lightbulb"></i> Arată Hint';
+                this.hintVisible = false;
+            } else {
+                hintReveal.textContent = this.currentQuestion.correctAnswer;
+                hintReveal.style.display = 'block';
+                btn.innerHTML = '<i class="fas fa-lightbulb"></i> Ascunde Hint';
+                this.hintVisible = true;
+            }
         });
 
-        // Enter key support
+		// Enter key support
         document.getElementById('typingAnswer').addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && !this.isAnswered) {
                 this.checkTypingAnswer();
@@ -280,14 +309,35 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
         });
 
         document.getElementById('searchBtn').addEventListener('click', () => {
-            this.searchDictionary();
+			// mirror to filters then render
+			const q = document.getElementById('dictionarySearch').value.trim().toLowerCase();
+			this.dictionaryFilters.query = q;
+			this.renderDictionary();
         });
 
         document.getElementById('dictionarySearch').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
-                this.searchDictionary();
+				const q = document.getElementById('dictionarySearch').value.trim().toLowerCase();
+				this.dictionaryFilters.query = q;
+				this.renderDictionary();
             }
         });
+
+		// Dictionary filters (live)
+		const dSort = document.getElementById('dictionarySort');
+		const dSrc = document.getElementById('dictSourceFilter');
+		const dTgt = document.getElementById('dictTargetFilter');
+		const dLetter = document.getElementById('dictLetter');
+		[dSort, dSrc, dTgt, dLetter].forEach(el => {
+			if (!el) return;
+			el.addEventListener('input', () => {
+				this.dictionaryFilters.sort = dSort ? dSort.value : 'recent';
+				this.dictionaryFilters.sourceLang = dSrc ? dSrc.value : 'any';
+				this.dictionaryFilters.targetLang = dTgt ? dTgt.value : 'any';
+				this.dictionaryFilters.letter = dLetter ? dLetter.value : 'all';
+				this.renderDictionary();
+			});
+		});
 
         // Theory
         document.getElementById('addTheoryBtn').addEventListener('click', () => {
@@ -320,7 +370,36 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
             e.preventDefault();
             this.saveEditedCard();
         });
+
+		// Cards filters
+		const cardsSort = document.getElementById('cardsSort');
+		const cardsSourceFilter = document.getElementById('cardsSourceFilter');
+		const cardsTargetFilter = document.getElementById('cardsTargetFilter');
+		const cardsLetter = document.getElementById('cardsLetter');
+		const cardsCategoryFilter = document.getElementById('cardsCategoryFilter');
+		[cardsSort, cardsSourceFilter, cardsTargetFilter, cardsLetter, cardsCategoryFilter].forEach(el => {
+			if (!el) return;
+			el.addEventListener('input', () => {
+				this.cardsFilters.sort = cardsSort ? cardsSort.value : 'recent';
+				this.cardsFilters.sourceLang = cardsSourceFilter ? cardsSourceFilter.value : 'any';
+				this.cardsFilters.targetLang = cardsTargetFilter ? cardsTargetFilter.value : 'any';
+				this.cardsFilters.letter = cardsLetter ? cardsLetter.value : 'all';
+				this.cardsFilters.category = cardsCategoryFilter ? cardsCategoryFilter.value : 'any';
+				this.renderCards();
+			});
+		});
     }
+
+	updateQuizAvailableCount() {
+		const count = this.cards.length;
+		const el = document.getElementById('quizTotalCards');
+		if (el) el.textContent = count;
+	}
+
+	getFilteredCardsForQuiz() {
+		return this.cards;
+	}
+
     renderDictionaryResults(results) {
         const container = document.getElementById('dictionaryResults');
         
@@ -374,10 +453,10 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
 
         this.currentTab = tabName;
 
-        // Update quiz stats if switching to quiz tab
-        if (tabName === 'quiz') {
-            document.getElementById('quizTotalCards').textContent = this.cards.length;
-        }
+		// Update quiz stats if switching to quiz tab
+		if (tabName === 'quiz') {
+			this.updateQuizAvailableCount();
+		}
     }
 
     // Cards Management
@@ -426,7 +505,38 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
         this.renderCards();
         this.hideAddCardForm();
         this.showNotification('Card added successfully!', 'success');
+
+		// Auto-add to dictionary
+		this.addDictionaryFromCard(card);
     }
+
+	addDictionaryFromCard(card) {
+		if (!card) return;
+		const exists = this.dictionary.some(e =>
+			e.sourceLang === card.sourceLanguage &&
+			e.targetLang === card.targetLanguage &&
+			e.sourceWord === card.sourceText &&
+			e.targetWord === card.targetText
+		);
+		if (exists) {
+			this.renderDictionary();
+			return;
+		}
+		const entry = {
+			id: Date.now() + Math.floor(Math.random() * 1000),
+			sourceLang: card.sourceLanguage,
+			targetLang: card.targetLanguage,
+			sourceWord: card.sourceText,
+			targetWord: card.targetText,
+			type: card.category === 'words' ? 'noun' : 'other',
+			description: '',
+			createdAt: new Date().toISOString()
+		};
+		this.dictionary.push(entry);
+		this.saveDictionary();
+		this.renderDictionary();
+		this.showNotification('Word added to dictionary automatically.', 'success');
+	}
 
     deleteCard(cardId) {
         if (confirm('Are you sure you want to delete this card?')) {
@@ -537,7 +647,32 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
             return;
         }
 
-        container.innerHTML = this.cards.map(card => `
+        const filters = this.cardsFilters;
+        let list = [...this.cards];
+        const q = this.cardsSearchQuery;
+        if (q) list = list.filter(card => (card.sourceText||'').toLowerCase().includes(q) || (card.targetText||'').toLowerCase().includes(q));
+        if (filters.sourceLang !== 'any') list = list.filter(card => card.sourceLanguage===filters.sourceLang);
+        if (filters.targetLang !== 'any') list = list.filter(card => card.targetLanguage===filters.targetLang);
+        if (filters.letter !== 'all') list = list.filter(card => ((card.sourceText||'').charAt(0).toUpperCase()===filters.letter));
+        if (filters.category !== 'any') list = list.filter(card => card.category === filters.category);
+        if (filters.sort==='recent') list.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+        else if (filters.sort==='az') list.sort((a,b)=>(a.sourceText||'').localeCompare(b.sourceText||''));
+        else if (filters.sort==='za') list.sort((a,b)=>(b.sourceText||'').localeCompare(a.sourceText||''));
+
+        if (list.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h3>Nicio potrivire</h3>
+                    <p>Ajustează căutarea pentru a vedea carduri</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = list.map(card => `
             <div class="card slide-in-up">
                 <div class="card-header">
                     <div class="card-category">${this.getCategoryLabel(card.category)}</div>
@@ -574,8 +709,15 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
         const selectedMode = document.querySelector('input[name="quizMode"]:checked').value;
         this.quizMode = selectedMode;
 
+        // Build quiz list from filters
+        const filtered = this.cards;
+        if (filtered.length === 0) {
+            this.showNotification('Nu există carduri care să corespundă filtrării pentru quiz.', 'error');
+            return;
+        }
+
         // Initialize quiz state
-        this.currentQuiz = [...this.cards];
+        this.currentQuiz = [...filtered];
         this.shuffleArray(this.currentQuiz);
         this.currentQuestionIndex = 0;
         this.isAnswered = false;
@@ -650,7 +792,7 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
         // Reset hint button
         const hintBtn = document.getElementById('hintBtn');
         hintBtn.classList.remove('hint-used');
-        hintBtn.innerHTML = '<i class="fas fa-lightbulb"></i> Show Hint';
+        hintBtn.innerHTML = '<i class="fas fa-lightbulb"></i> Arată Hint';
         hintBtn.disabled = false;
 
         // Update progress
@@ -667,6 +809,18 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
                 document.getElementById('typingAnswer').focus();
             }, 100);
         }
+
+        this.hintVisible = false;
+        document.getElementById('hintBtn').innerHTML = '<i class="fas fa-lightbulb"></i> Arată Hint';
+        document.getElementById('hintBtn').disabled = false;
+        let hintReveal = document.getElementById('hintReveal');
+        if (!hintReveal) {
+            hintReveal = document.createElement('div');
+            hintReveal.id = 'hintReveal';
+            document.getElementById('questionText').parentNode.appendChild(hintReveal);
+        }
+        hintReveal.style.display = 'none';
+        hintReveal.textContent = '';
     }
 
     setQuizMode(mode) {
@@ -890,7 +1044,42 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
     }
 
     renderDictionary() {
-        this.renderDictionaryResults(this.dictionary);
+        const list = this.getFilteredDictionary();
+        this.renderDictionaryResults(list);
+    }
+
+    getFilteredDictionary() {
+        let list = [...this.dictionary];
+        const { query, sourceLang, targetLang, letter, sort } = this.dictionaryFilters || {};
+
+        if (query) {
+            const q = query.toLowerCase();
+            list = list.filter(e =>
+                (e.sourceWord && e.sourceWord.toLowerCase().includes(q)) ||
+                (e.targetWord && e.targetWord.toLowerCase().includes(q)) ||
+                (e.description && e.description.toLowerCase().includes(q))
+            );
+        }
+
+        if (sourceLang && sourceLang !== 'any') list = list.filter(e => e.sourceLang === sourceLang);
+        if (targetLang && targetLang !== 'any') list = list.filter(e => e.targetLang === targetLang);
+
+        if (letter && letter !== 'all') {
+            list = list.filter(e => {
+                const w = (e.sourceWord || '').trim();
+                return w.charAt(0).toUpperCase() === letter;
+            });
+        }
+
+        if (sort === 'recent') {
+            list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        } else if (sort === 'az') {
+            list.sort((a, b) => (a.sourceWord || '').localeCompare(b.sourceWord || ''));
+        } else if (sort === 'za') {
+            list.sort((a, b) => (b.sourceWord || '').localeCompare(a.sourceWord || ''));
+        }
+
+        return list;
     }
 
     renderDictionaryResults(results) {
