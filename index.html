@@ -23,50 +23,95 @@
             <div class="header-content">
                 <div class="logo">
                     <div class="logo-icon">
-                        <i class="fas fa-brain"></i>
+                        <i class="fas fa-graduation-cap"></i>
                     </div>
-                    <h1>Language Learning</h1>
+                    <div class="logo-text">
+                        <h1>Italian Learning</h1>
+                        <p class="logo-subtitle">Master Italian with Smart Flashcards</p>
+                    </div>
                 </div>
-                <div class="header-stats">
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-layer-group"></i>
-                        </div>
-                        <div class="stat-info">
-                            <span class="stat-number" id="totalCards">0</span>
-                            <span class="stat-label">Total Cards</span>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-check-circle"></i>
-                        </div>
-                        <div class="stat-info">
-                            <span class="stat-number" id="learnedCards">0</span>
-                            <span class="stat-label">Learned</span>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-calendar-day"></i>
-                        </div>
-                        <div class="stat-info">
-                            <span class="stat-number" id="studiedToday">0</span>
-                            <span class="stat-label">Today</span>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-fire"></i>
-                        </div>
-                        <div class="stat-info">
-                            <span class="stat-number" id="streak">0</span>
-                            <span class="stat-label">Streak</span>
-                        </div>
-                    </div>
+                <div class="header-actions-top">
+                    <button class="btn-icon-header" id="resetStatsBtn" title="Reset Statistics">
+                        <i class="fas fa-redo"></i>
+                    </button>
                 </div>
             </div>
         </header>
+
+        <!-- Dashboard Stats -->
+        <section class="dashboard-stats">
+            <div class="stats-grid">
+                <div class="stat-card-new primary">
+                    <div class="stat-icon-new">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-number-new" id="totalCards">0</span>
+                        <span class="stat-label-new">Total Cards</span>
+                    </div>
+                </div>
+                <div class="stat-card-new success">
+                    <div class="stat-icon-new">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-number-new" id="learnedCards">0</span>
+                        <span class="stat-label-new">Mastered</span>
+                    </div>
+                </div>
+                <div class="stat-card-new warning">
+                    <div class="stat-icon-new">
+                        <i class="fas fa-dumbbell"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-number-new" id="exercisesToday">0</span>
+                        <span class="stat-label-new">Exercises Today</span>
+                    </div>
+                </div>
+                <div class="stat-card-new info">
+                    <div class="stat-icon-new">
+                        <i class="fas fa-calendar-day"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-number-new" id="studiedToday">0</span>
+                        <span class="stat-label-new">Studied Today</span>
+                    </div>
+                </div>
+                <div class="stat-card-new fire">
+                    <div class="stat-icon-new">
+                        <i class="fas fa-fire"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-number-new" id="streak">0</span>
+                        <span class="stat-label-new">Day Streak</span>
+                    </div>
+                </div>
+                <div class="stat-card-new purple">
+                    <div class="stat-icon-new">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-content">
+                        <span class="stat-number-new" id="accuracy">0%</span>
+                        <span class="stat-label-new">Accuracy</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="daily-goal-card">
+                <div class="goal-header">
+                    <div class="goal-info">
+                        <i class="fas fa-target"></i>
+                        <span>Daily Goal Progress</span>
+                    </div>
+                    <span class="goal-count"><span id="dailyGoalCurrent">0</span> / <span id="dailyGoalTarget">20</span></span>
+                </div>
+                <div class="goal-progress-bar">
+                    <div class="goal-progress-fill" id="dailyGoalProgress"></div>
+                </div>
+                <p class="goal-message" id="goalMessage">Keep going! You're doing great! 🎯</p>
+            </div>
+        </section>
 
         <!-- Main Content -->
         <main class="main-content">
@@ -74,111 +119,147 @@
             <nav class="nav-tabs">
                 <button class="nav-tab active" data-tab="cards">
                     <i class="fas fa-layer-group"></i>
-                    <span>Cards</span>
+                    <span>Flashcards</span>
+                    <span class="nav-badge" id="cardsBadge">0</span>
                 </button>
                 <button class="nav-tab" data-tab="quiz">
-                    <i class="fas fa-play"></i>
-                    <span>Quiz</span>
+                    <i class="fas fa-play-circle"></i>
+                    <span>Practice</span>
                 </button>
                 <button class="nav-tab" data-tab="dictionary">
-                    <i class="fas fa-book"></i>
+                    <i class="fas fa-book-open"></i>
                     <span>Dictionary</span>
+                    <span class="nav-badge" id="dictBadge">0</span>
                 </button>
                 <button class="nav-tab" data-tab="theory">
-                    <i class="fas fa-graduation-cap"></i>
-                    <span>Theory</span>
+                    <i class="fas fa-lightbulb"></i>
+                    <span>Resources</span>
                 </button>
             </nav>
 
             <!-- Cards Tab -->
             <section class="tab-content active" id="cards-tab">
                 <div class="section-header">
-                    <h2>Your Flashcards</h2>
-                    <div class="search-box">
-                        <textarea id="cardsSearch" placeholder="Caută flashcarduri (cuvinte/expresii)"></textarea>
-                    </div>
-                    
-                    <div class="filter-bar" >
-                        <div>
-                            <select id="cardsCategoryFilter">
-                                <option value="any">Oricare categorie</option>
-                                <option value="words">Cuvinte</option>
-                                <option value="phrases">Fraze</option>
-                                <option value="sentences">Propoziții</option>
-                                <option value="texts">Texte lungi</option>
-                            </select>
-                        </div>
-                        <div>
-                            <select id="cardsSort">
-                                <option value="recent">Cele mai recente</option>
-                                <option value="az">A → Z (după text sursă)</option>
-                                <option value="za">Z → A (după text sursă)</option>
-                            </select>
-                        </div>
-                        <div>
-                            <select id="cardsSourceFilter">
-                                <option value="any">Din: Oricare</option>
-                                <option value="ro">Din: Romanian</option>
-                                <option value="en">Din: English</option>
-                                <option value="it">Din: Italian</option>
-                            </select>
-                        </div>
-                        <div>
-                            <select id="cardsTargetFilter">
-                                <option value="any">În: Oricare</option>
-                                <option value="ro">În: Romanian</option>
-                                <option value="en">În: English</option>
-                                <option value="it">În: Italian</option>
-                            </select>
-                        </div>
-                        <div>
-                            <select id="cardsLetter">
-                                <option value="all">Toate literele</option>
-                                <option value="A">A</option>
-                                <option value="B">B</option>
-                                <option value="C">C</option>
-                                <option value="D">D</option>
-                                <option value="E">E</option>
-                                <option value="F">F</option>
-                                <option value="G">G</option>
-                                <option value="H">H</option>
-                                <option value="I">I</option>
-                                <option value="J">J</option>
-                                <option value="K">K</option>
-                                <option value="L">L</option>
-                                <option value="M">M</option>
-                                <option value="N">N</option>
-                                <option value="O">O</option>
-                                <option value="P">P</option>
-                                <option value="Q">Q</option>
-                                <option value="R">R</option>
-                                <option value="S">S</option>
-                                <option value="T">T</option>
-                                <option value="U">U</option>
-                                <option value="V">V</option>
-                                <option value="W">W</option>
-                                <option value="X">X</option>
-                                <option value="Y">Y</option>
-                                <option value="Z">Z</option>
-                            </select>
-                        </div>
+                    <div class="section-title">
+                        <h2>📚 Your Flashcards</h2>
+                        <p class="section-subtitle">Manage and organize your learning cards</p>
                     </div>
                     <div class="header-actions">
-                        <div class="import-export-buttons">
-                            <button class="btn btn-secondary" id="exportCardsBtn">
-                                <i class="fas fa-download"></i>
-                                Export
-                            </button>
-                            <button class="btn btn-secondary" id="importCardsBtn">
-                                <i class="fas fa-upload"></i>
-                                Import
-                            </button>
-                            <input type="file" id="importFile" accept=".json" style="display: none;">
-                        </div>
+                        <button class="btn btn-secondary" id="exportCardsBtn">
+                            <i class="fas fa-download"></i>
+                            <span>Export</span>
+                        </button>
+                        <button class="btn btn-secondary" id="importCardsBtn">
+                            <i class="fas fa-upload"></i>
+                            <span>Import</span>
+                        </button>
+                        <input type="file" id="importFile" accept=".json" style="display: none;">
                         <button class="btn btn-primary" id="addCardBtn">
                             <i class="fas fa-plus"></i>
-                            Add New Card
+                            <span>Add Card</span>
                         </button>
+                    </div>
+                </div>
+
+                <!-- Advanced Filters -->
+                <div class="filters-container">
+                    <div class="search-box-modern">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="cardsSearch" placeholder="Search flashcards by word or phrase...">
+                        <button class="clear-search" id="clearCardsSearch" style="display: none;">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+
+                    <div class="filters-toggle">
+                        <button class="btn-filter-toggle" id="toggleFilters">
+                            <i class="fas fa-sliders-h"></i>
+                            <span>Advanced Filters</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <span class="filter-count" id="activeFiltersCount" style="display: none;">0 active</span>
+                    </div>
+
+                    <div class="filters-panel" id="filtersPanel" style="display: none;">
+                        <div class="filters-grid">
+                            <div class="filter-group">
+                                <label><i class="fas fa-tag"></i> Category</label>
+                                <select id="cardsCategoryFilter" class="filter-select">
+                                    <option value="any">All Categories</option>
+                                    <option value="words">📝 Words</option>
+                                    <option value="phrases">💬 Phrases</option>
+                                    <option value="sentences">📄 Sentences</option>
+                                    <option value="texts">📖 Long Texts</option>
+                                </select>
+                            </div>
+
+                            <div class="filter-group">
+                                <label><i class="fas fa-language"></i> From Language</label>
+                                <select id="cardsSourceFilter" class="filter-select">
+                                    <option value="any">Any Language</option>
+                                    <option value="ro">🇷🇴 Romanian</option>
+                                    <option value="en">🇬🇧 English</option>
+                                    <option value="it">🇮🇹 Italian</option>
+                                </select>
+                            </div>
+
+                            <div class="filter-group">
+                                <label><i class="fas fa-language"></i> To Language</label>
+                                <select id="cardsTargetFilter" class="filter-select">
+                                    <option value="any">Any Language</option>
+                                    <option value="ro">🇷🇴 Romanian</option>
+                                    <option value="en">🇬🇧 English</option>
+                                    <option value="it">🇮🇹 Italian</option>
+                                </select>
+                            </div>
+
+                            <div class="filter-group">
+                                <label><i class="fas fa-sort-alpha-down"></i> Sort By</label>
+                                <select id="cardsSort" class="filter-select">
+                                    <option value="recent">📅 Most Recent</option>
+                                    <option value="az">🔤 A → Z</option>
+                                    <option value="za">🔤 Z → A</option>
+                                    <option value="mostPracticed">🔥 Most Practiced</option>
+                                    <option value="leastPracticed">❄️ Least Practiced</option>
+                                    <option value="hardest">😰 Hardest</option>
+                                    <option value="easiest">😊 Easiest</option>
+                                </select>
+                            </div>
+
+                            <div class="filter-group">
+                                <label><i class="fas fa-font"></i> Starts With</label>
+                                <select id="cardsLetter" class="filter-select">
+                                    <option value="all">All Letters</option>
+                                    <option value="A">A</option><option value="B">B</option><option value="C">C</option>
+                                    <option value="D">D</option><option value="E">E</option><option value="F">F</option>
+                                    <option value="G">G</option><option value="H">H</option><option value="I">I</option>
+                                    <option value="J">J</option><option value="K">K</option><option value="L">L</option>
+                                    <option value="M">M</option><option value="N">N</option><option value="O">O</option>
+                                    <option value="P">P</option><option value="Q">Q</option><option value="R">R</option>
+                                    <option value="S">S</option><option value="T">T</option><option value="U">U</option>
+                                    <option value="V">V</option><option value="W">W</option><option value="X">X</option>
+                                    <option value="Y">Y</option><option value="Z">Z</option>
+                                </select>
+                            </div>
+
+                            <div class="filter-group">
+                                <label><i class="fas fa-chart-bar"></i> Difficulty</label>
+                                <select id="cardsDifficulty" class="filter-select">
+                                    <option value="any">All Levels</option>
+                                    <option value="new">🆕 New (Not Practiced)</option>
+                                    <option value="learning">📚 Learning (< 50%)</option>
+                                    <option value="mastered">✅ Mastered (> 80%)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="filters-actions">
+                            <button class="btn btn-secondary btn-sm" id="resetFilters">
+                                <i class="fas fa-undo"></i>
+                                Reset All
+                            </button>
+                            <span class="results-count" id="resultsCount">Showing all cards</span>
+                        </div>
                     </div>
                 </div>
 
@@ -254,31 +335,109 @@
                 <div class="section-header">
                     <h2>Learning Quiz</h2>
                     <div class="quiz-controls">
-                        <div class="quiz-mode-selector">
-                            <label class="mode-option">
+                        <div class="quiz-modes-grid">
+                            <label class="quiz-mode-card">
                                 <input type="radio" name="quizMode" value="typing" checked>
-                                <span class="mode-label">
-                                    <i class="fas fa-keyboard"></i>
-                                    Typing
-                                </span>
+                                <div class="mode-card-content">
+                                    <div class="mode-icon">
+                                        <i class="fas fa-keyboard"></i>
+                                    </div>
+                                    <div class="mode-title">Typing</div>
+                                    <div class="mode-description">Type the translation</div>
+                                </div>
                             </label>
-                            <label class="mode-option">
+                            
+                            <label class="quiz-mode-card">
                                 <input type="radio" name="quizMode" value="multiple">
-                                <span class="mode-label">
-                                    <i class="fas fa-list"></i>
-                                    Multiple Choice
-                                </span>
+                                <div class="mode-card-content">
+                                    <div class="mode-icon">
+                                        <i class="fas fa-list-ul"></i>
+                                    </div>
+                                    <div class="mode-title">Multiple Choice</div>
+                                    <div class="mode-description">Choose from 4 options</div>
+                                </div>
                             </label>
-                            <label class="mode-option">
+                            
+                            <label class="quiz-mode-card">
                                 <input type="radio" name="quizMode" value="sentence">
-                                <span class="mode-label">
-                                    <i class="fas fa-align-left"></i>
-                                    Sentences
-                                </span>
+                                <div class="mode-card-content">
+                                    <div class="mode-icon">
+                                        <i class="fas fa-align-left"></i>
+                                    </div>
+                                    <div class="mode-title">Sentences</div>
+                                    <div class="mode-description">Translate full sentences</div>
+                                </div>
+                            </label>
+                            
+                            <label class="quiz-mode-card">
+                                <input type="radio" name="quizMode" value="flashcard">
+                                <div class="mode-card-content">
+                                    <div class="mode-icon">
+                                        <i class="fas fa-clone"></i>
+                                    </div>
+                                    <div class="mode-title">Flashcards</div>
+                                    <div class="mode-description">Flip cards to reveal</div>
+                                </div>
+                            </label>
+                            
+                            <label class="quiz-mode-card">
+                                <input type="radio" name="quizMode" value="listening">
+                                <div class="mode-card-content">
+                                    <div class="mode-icon">
+                                        <i class="fas fa-headphones"></i>
+                                    </div>
+                                    <div class="mode-title">Listening</div>
+                                    <div class="mode-description">Listen and type</div>
+                                </div>
+                            </label>
+                            
+                            <label class="quiz-mode-card">
+                                <input type="radio" name="quizMode" value="matching">
+                                <div class="mode-card-content">
+                                    <div class="mode-icon">
+                                        <i class="fas fa-puzzle-piece"></i>
+                                    </div>
+                                    <div class="mode-title">Matching</div>
+                                    <div class="mode-description">Match pairs together</div>
+                                </div>
+                            </label>
+                            
+                            <label class="quiz-mode-card">
+                                <input type="radio" name="quizMode" value="speed">
+                                <div class="mode-card-content">
+                                    <div class="mode-icon">
+                                        <i class="fas fa-bolt"></i>
+                                    </div>
+                                    <div class="mode-title">Speed Round</div>
+                                    <div class="mode-description">Race against time</div>
+                                </div>
+                            </label>
+                            
+                            <label class="quiz-mode-card">
+                                <input type="radio" name="quizMode" value="pronunciation">
+                                <div class="mode-card-content">
+                                    <div class="mode-icon">
+                                        <i class="fas fa-microphone"></i>
+                                    </div>
+                                    <div class="mode-title">Pronunciation</div>
+                                    <div class="mode-description">Record your voice</div>
+                                </div>
+                            </label>
+                            
+                            <label class="quiz-mode-card">
+                                <input type="radio" name="quizMode" value="mixed">
+                                <div class="mode-card-content">
+                                    <div class="mode-icon">
+                                        <i class="fas fa-random"></i>
+                                    </div>
+                                    <div class="mode-title">Mixed Mode</div>
+                                    <div class="mode-description">All modes combined</div>
+                                </div>
                             </label>
                         </div>
+                        
                         <button class="btn btn-primary btn-large" id="startQuizBtn">
-                            <i class="fas fa-play"></i>
+                            <i class="fas fa-play-circle"></i>
                             Start Quiz
                         </button>
                     </div>
@@ -342,6 +501,98 @@
                                 </button>
                             </div>
                         </div>
+
+                        <!-- Flashcard Mode -->
+                        <div class="flashcard-mode" id="flashcardMode" style="display: none;">
+                            <div class="flashcard-container">
+                                <div class="flashcard" id="flashcard">
+                                    <div class="flashcard-front">
+                                        <div class="flashcard-text" id="flashcardFront">Word</div>
+                                        <div class="flashcard-hint">Click to flip</div>
+                                    </div>
+                                    <div class="flashcard-back" style="display: none;">
+                                        <div class="flashcard-text" id="flashcardBack">Translation</div>
+                                    </div>
+                                </div>
+                                <div class="flashcard-actions">
+                                    <button class="btn btn-secondary" id="flashcardWrong">
+                                        <i class="fas fa-times"></i> Don't Know
+                                    </button>
+                                    <button class="btn btn-primary" id="flashcardCorrect">
+                                        <i class="fas fa-check"></i> I Know
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Listening Mode -->
+                        <div class="listening-mode" id="listeningMode" style="display: none;">
+                            <div class="listening-controls">
+                                <button class="btn-listen" id="playAudio">
+                                    <i class="fas fa-volume-up"></i>
+                                    <span>Listen</span>
+                                </button>
+                                <button class="btn-listen" id="playAudioSlow">
+                                    <i class="fas fa-turtle"></i>
+                                    <span>Slow</span>
+                                </button>
+                            </div>
+                            <div class="input-group">
+                                <input type="text" id="listeningAnswer" placeholder="Type what you hear..." autocomplete="off">
+                                <button class="btn btn-primary" id="checkListening">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Matching Mode -->
+                        <div class="matching-mode" id="matchingMode" style="display: none;">
+                            <div class="matching-grid" id="matchingGrid">
+                                <!-- Matching pairs will be generated here -->
+                            </div>
+                        </div>
+
+                        <!-- Speed Mode -->
+                        <div class="speed-mode" id="speedMode" style="display: none;">
+                            <div class="speed-timer" id="speedTimer">10</div>
+                            <div class="input-group">
+                                <input type="text" id="speedAnswer" placeholder="Quick! Type your answer..." autocomplete="off">
+                                <button class="btn btn-primary" id="checkSpeed">
+                                    <i class="fas fa-bolt"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Pronunciation Mode -->
+                        <div class="pronunciation-mode" id="pronunciationMode" style="display: none;">
+                            <div class="pronunciation-container">
+                                <div class="pronunciation-word" id="pronunciationWord">Word to pronounce</div>
+                                <button class="btn-listen-large" id="playPronunciation">
+                                    <i class="fas fa-volume-up"></i>
+                                    <span>Listen to pronunciation</span>
+                                </button>
+                                <div class="recording-section">
+                                    <button class="btn-record" id="recordBtn">
+                                        <i class="fas fa-microphone"></i>
+                                        <span id="recordText">Hold to Record</span>
+                                    </button>
+                                    <div class="recording-indicator" id="recordingIndicator" style="display: none;">
+                                        <div class="pulse"></div>
+                                        <span>Recording...</span>
+                                    </div>
+                                </div>
+                                <div class="playback-section" id="playbackSection" style="display: none;">
+                                    <button class="btn btn-secondary" id="playRecording">
+                                        <i class="fas fa-play"></i>
+                                        Play My Recording
+                                    </button>
+                                    <button class="btn btn-primary" id="savePronunciation">
+                                        <i class="fas fa-save"></i>
+                                        Save & Continue
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="feedback-section" id="feedbackSection" style="display: none;">
@@ -397,100 +648,168 @@
 
             <!-- Dictionary Tab -->
             <section class="tab-content" id="dictionary-tab">
-                <div class="dictionary-controls">
-                    <button class="btn btn-secondary" id="exportDictionaryBtn">
-                        <i class="fas fa-file-export"></i> Export Dictionary
-                    </button>
-                    <button class="btn btn-secondary" id="importDictionaryBtn">
-                        <i class="fas fa-file-import"></i> Import Dictionary
-                    </button>
-                    <input type="file" id="importDictionaryFile" accept=".json" style="display:none">
-                </div>
-                
                 <div class="section-header">
-                    <h2>Dictionary</h2>
-                    <button class="btn btn-primary" id="addDictionaryBtn">
-                        <i class="fas fa-plus"></i>
-                        Add Word
+                    <div class="section-title">
+                        <h2>📖 Dictionary</h2>
+                        <p class="section-subtitle">Search and manage your vocabulary</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn btn-secondary" id="exportDictionaryBtn">
+                            <i class="fas fa-download"></i>
+                            <span>Export</span>
+                        </button>
+                        <button class="btn btn-secondary" id="importDictionaryBtn">
+                            <i class="fas fa-upload"></i>
+                            <span>Import</span>
+                        </button>
+                        <input type="file" id="importDictionaryFile" accept=".json" style="display:none">
+                        <button class="btn btn-primary" id="addDictionaryBtn">
+                            <i class="fas fa-plus"></i>
+                            <span>Add Word</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Dictionary Tabs -->
+                <div class="dictionary-tabs">
+                    <button class="dict-tab active" data-dict-tab="online">
+                        <i class="fas fa-globe"></i>
+                        <span>Online Dictionary</span>
+                        <span class="tab-badge">API</span>
+                    </button>
+                    <button class="dict-tab" data-dict-tab="my-words">
+                        <i class="fas fa-bookmark"></i>
+                        <span>My Words</span>
+                        <span class="tab-badge" id="myWordsBadge">0</span>
                     </button>
                 </div>
 
-                <div class="dictionary-content">
-                    <div class="search-section">
-                        <div class="search-box">
-                            <div class="search-box dictionary-search">
-                                <input type="text" id="dictionarySearch" placeholder="Search for a word...">
-                                <button class="btn btn-primary" id="searchBtn">
-                                    <i class="fas fa-search"></i>
+                <!-- Online Dictionary Tab -->
+                <div class="dict-tab-content active" id="online-dict-content">
+                    <div class="online-search-section">
+                        <div class="search-box-modern">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="onlineSearch" placeholder="Search any word in Romanian or Italian...">
+                            <button class="clear-search" id="clearOnlineSearch" style="display: none;">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="language-toggle">
+                            <label>Translation Direction:</label>
+                            <div class="toggle-buttons">
+                                <button class="toggle-btn active" id="roToIt" data-from="ro" data-to="it">
+                                    🇷🇴 Romanian → 🇮🇹 Italian
+                                </button>
+                                <button class="toggle-btn" id="itToRo" data-from="it" data-to="ro">
+                                    🇮🇹 Italian → 🇷🇴 Romanian
                                 </button>
                             </div>
+                        </div>
+
+                        <!-- Alphabet Navigation -->
+                        <div class="alphabet-nav">
+                            <button class="alphabet-btn active" data-letter="all">All</button>
+                            <button class="alphabet-btn" data-letter="A">A</button>
+                            <button class="alphabet-btn" data-letter="B">B</button>
+                            <button class="alphabet-btn" data-letter="C">C</button>
+                            <button class="alphabet-btn" data-letter="D">D</button>
+                            <button class="alphabet-btn" data-letter="E">E</button>
+                            <button class="alphabet-btn" data-letter="F">F</button>
+                            <button class="alphabet-btn" data-letter="G">G</button>
+                            <button class="alphabet-btn" data-letter="H">H</button>
+                            <button class="alphabet-btn" data-letter="I">I</button>
+                            <button class="alphabet-btn" data-letter="J">J</button>
+                            <button class="alphabet-btn" data-letter="L">L</button>
+                            <button class="alphabet-btn" data-letter="M">M</button>
+                            <button class="alphabet-btn" data-letter="N">N</button>
+                            <button class="alphabet-btn" data-letter="O">O</button>
+                            <button class="alphabet-btn" data-letter="P">P</button>
+                            <button class="alphabet-btn" data-letter="R">R</button>
+                            <button class="alphabet-btn" data-letter="S">S</button>
+                            <button class="alphabet-btn" data-letter="T">T</button>
+                            <button class="alphabet-btn" data-letter="U">U</button>
+                            <button class="alphabet-btn" data-letter="V">V</button>
+                            <button class="alphabet-btn" data-letter="Z">Z</button>
+                        </div>
+                    </div>
+
+                    <div class="online-results" id="onlineResults">
+                        <div class="dictionary-browse-info">
+                            <h3>📖 Browse Dictionary</h3>
+                            <p>Select a letter above to browse words, or search for a specific word</p>
+                            
+                            <div class="libretranslate-info">
+                                <i class="fas fa-unlock-alt"></i>
+                                <div class="libretranslate-info-text">
+                                    <strong>Powered by LibreTranslate</strong>
+                                    <small>Free and Open Source translation API with high accuracy for Romanian-Italian</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- My Words Tab -->
+                <div class="dict-tab-content" id="my-words-content">
+                    <div class="search-section">
+                        <div class="search-box-modern">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="myWordsSearch" placeholder="Search in your saved words...">
+                            <button class="clear-search" id="clearMyWordsSearch" style="display: none;">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
                             
                         
-                        <div class="filter-bar" >
-                            <div>
-                                <select id="dictionarySort">
-                                    <option value="recent">Cele mai recente</option>
-                                    <option value="az">A → Z (după cuvânt)</option>
-                                    <option value="za">Z → A (după cuvânt)</option>
-                                </select>
-                            </div>
-                            <div>
-                                <select id="dictSourceFilter">
-                                    <option value="any">Din: Oricare</option>
-                                    <option value="ro">Din: Romanian</option>
-                                    <option value="en">Din: English</option>
-                                    <option value="it">Din: Italian</option>
-                                </select>
-                            </div>
-                            <div>
-                                <select id="dictTargetFilter">
-                                    <option value="any">În: Oricare</option>
-                                    <option value="ro">În: Romanian</option>
-                                    <option value="en">În: English</option>
-                                    <option value="it">În: Italian</option>
-                                </select>
-                            </div>
-                            <div>
-                                <select id="dictLetter">
-                                    <option value="all">Toate literele</option>
-                                    <option value="A">A</option>
-                                    <option value="B">B</option>
-                                    <option value="C">C</option>
-                                    <option value="D">D</option>
-                                    <option value="E">E</option>
-                                    <option value="F">F</option>
-                                    <option value="G">G</option>
-                                    <option value="H">H</option>
-                                    <option value="I">I</option>
-                                    <option value="J">J</option>
-                                    <option value="K">K</option>
-                                    <option value="L">L</option>
-                                    <option value="M">M</option>
-                                    <option value="N">N</option>
-                                    <option value="O">O</option>
-                                    <option value="P">P</option>
-                                    <option value="Q">Q</option>
-                                    <option value="R">R</option>
-                                    <option value="S">S</option>
-                                    <option value="T">T</option>
-                                    <option value="U">U</option>
-                                    <option value="V">V</option>
-                                    <option value="W">W</option>
-                                    <option value="X">X</option>
-                                    <option value="Y">Y</option>
-                                    <option value="Z">Z</option>
-                                </select>
+                        
+                        <div class="filters-toggle">
+                            <button class="btn-filter-toggle" id="toggleMyWordsFilters">
+                                <i class="fas fa-sliders-h"></i>
+                                <span>Filters</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                        </div>
+
+                        <div class="filters-panel" id="myWordsFiltersPanel" style="display: none;">
+                            <div class="filters-grid">
+                                <div class="filter-group">
+                                    <label><i class="fas fa-sort"></i> Sort By</label>
+                                    <select id="myWordsSort" class="filter-select">
+                                        <option value="recent">Most Recent</option>
+                                        <option value="az">A → Z</option>
+                                        <option value="za">Z → A</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label><i class="fas fa-language"></i> From</label>
+                                    <select id="myWordsSourceFilter" class="filter-select">
+                                        <option value="any">Any Language</option>
+                                        <option value="ro">🇷🇴 Romanian</option>
+                                        <option value="en">🇬🇧 English</option>
+                                        <option value="it">🇮🇹 Italian</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label><i class="fas fa-language"></i> To</label>
+                                    <select id="myWordsTargetFilter" class="filter-select">
+                                        <option value="any">Any Language</option>
+                                        <option value="ro">🇷🇴 Romanian</option>
+                                        <option value="en">🇬🇧 English</option>
+                                        <option value="it">🇮🇹 Italian</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="dictionary-results" id="dictionaryResults">
+                    <div class="my-words-results" id="myWordsResults">
                         <div class="empty-state">
                             <div class="empty-icon">
-                                <i class="fas fa-search"></i>
+                                <i class="fas fa-bookmark"></i>
                             </div>
-                            <h3>Search for words</h3>
-                            <p>Enter a word to see translations and definitions</p>
+                            <h3>No saved words yet</h3>
+                            <p>Add words from the online dictionary or create your own</p>
                         </div>
                     </div>
                 </div>
@@ -499,23 +818,48 @@
             <!-- Theory Tab -->
             <section class="tab-content" id="theory-tab">
                 <div class="section-header">
-                    <h2>Theory & Materials</h2>
-                    <button class="btn btn-primary" id="addTheoryBtn">
-                        <i class="fas fa-plus"></i>
-                        Add Material
+                    <div class="section-title">
+                        <h2>📚 Learning Resources</h2>
+                        <p class="section-subtitle">Dictionaries, grammar books, and learning materials</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn btn-secondary" id="addLinkBtn">
+                            <i class="fas fa-link"></i>
+                            <span>Add Link</span>
+                        </button>
+                        <button class="btn btn-primary" id="addResourceBtn">
+                            <i class="fas fa-plus"></i>
+                            <span>Add Resource</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Resource Categories -->
+                <div class="resource-categories">
+                    <button class="resource-category-btn active" data-category="all">
+                        <i class="fas fa-th"></i>
+                        <span>All Resources</span>
+                    </button>
+                    <button class="resource-category-btn" data-category="dictionaries">
+                        <i class="fas fa-book"></i>
+                        <span>Dictionaries</span>
+                    </button>
+                    <button class="resource-category-btn" data-category="grammar">
+                        <i class="fas fa-spell-check"></i>
+                        <span>Grammar</span>
+                    </button>
+                    <button class="resource-category-btn" data-category="links">
+                        <i class="fas fa-link"></i>
+                        <span>Links</span>
+                    </button>
+                    <button class="resource-category-btn" data-category="custom">
+                        <i class="fas fa-folder"></i>
+                        <span>My Files</span>
                     </button>
                 </div>
 
-                <div class="theory-content">
-                    <div class="theory-list" id="theoryList">
-                        <div class="empty-state">
-                            <div class="empty-icon">
-                                <i class="fas fa-graduation-cap"></i>
-                            </div>
-                            <h3>No theory materials yet</h3>
-                            <p>Add your first learning material to get started!</p>
-                        </div>
-                    </div>
+                <div class="resources-grid" id="resourcesGrid">
+                    <!-- Resources will be loaded here -->
                 </div>
             </section>
         </main>
@@ -660,40 +1004,77 @@
       </div>
       
 
-    <!-- Add Theory Modal -->
-    <div class="modal" id="theoryModal">
+    <!-- Add Resource Modal -->
+    <div class="modal" id="resourceModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Add Theory Material</h3>
-                <button class="btn-close" id="closeTheoryModal">
+                <h3>Add Learning Resource</h3>
+                <button class="btn-close" id="closeResourceModal">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             <div class="modal-body">
-                <form id="theoryForm">
+                <form id="resourceForm">
                     <div class="form-group">
-                        <label for="theoryTitle">Title</label>
-                        <input type="text" id="theoryTitle" placeholder="Enter material title" required>
+                        <label for="resourceTitle">Title</label>
+                        <input type="text" id="resourceTitle" placeholder="e.g., Italian Grammar Book" required>
                     </div>
                     <div class="form-group">
-                        <label for="theoryLanguage">Language</label>
-                        <select id="theoryLanguage">
-                            <option value="ro">Romanian</option>
-                            <option value="en">English</option>
-                            <option value="it">Italian</option>
+                        <label for="resourceCategory">Category</label>
+                        <select id="resourceCategory" required>
+                            <option value="dictionaries">📖 Dictionary</option>
+                            <option value="grammar">📝 Grammar</option>
+                            <option value="vocabulary">📚 Vocabulary</option>
+                            <option value="exercises">✏️ Exercises</option>
+                            <option value="reading">📰 Reading Material</option>
+                            <option value="audio">🎧 Audio/Video</option>
+                            <option value="custom">📁 Other</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="theoryDescription">Description</label>
-                        <textarea id="theoryDescription" placeholder="Enter material description" rows="4" required></textarea>
+                        <label for="resourceDescription">Description</label>
+                        <textarea id="resourceDescription" placeholder="Brief description of the resource" rows="3"></textarea>
                     </div>
                     <div class="form-group">
-                        <label for="theoryFile">Upload File (optional)</label>
-                        <input type="file" id="theoryFile" accept=".pdf,.doc,.docx,.txt">
+                        <label for="resourceFile">Upload File</label>
+                        <input type="file" id="resourceFile" accept=".pdf,.doc,.docx,.txt,.epub">
+                        <small>Supported: PDF, DOC, DOCX, TXT, EPUB</small>
                     </div>
                     <div class="form-actions">
-                        <button type="button" class="btn btn-secondary" id="cancelTheory">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Add Material</button>
+                        <button type="button" class="btn btn-secondary" id="cancelResource">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add Resource</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Link Modal -->
+    <div class="modal" id="linkModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add Learning Link</h3>
+                <button class="btn-close" id="closeLinkModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="linkForm">
+                    <div class="form-group">
+                        <label for="linkTitle">Title</label>
+                        <input type="text" id="linkTitle" placeholder="e.g., Italian Learning Website" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="linkUrl">URL</label>
+                        <input type="url" id="linkUrl" placeholder="https://example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="linkDescription">Description</label>
+                        <textarea id="linkDescription" placeholder="What is this link about?" rows="3"></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" id="cancelLink">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add Link</button>
                     </div>
                 </form>
             </div>
@@ -701,12 +1082,15 @@
     </div>
 
     <!-- Notification -->
-    <div class="notification" id="notification">
+    <div class="notification" id="notification" style="display: none;">
         <div class="notification-content">
             <div class="notification-icon">
                 <i class="fas fa-check-circle"></i>
             </div>
             <div class="notification-message" id="notificationMessage">Success!</div>
+            <button class="notification-close" id="notificationClose">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
     </div>
 
