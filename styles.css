@@ -3666,3 +3666,45 @@ body {
         font-size: 2.5rem;
     }
 }
+
+
+/* ===== RESOURCE TYPE TOGGLE ===== */
+.resource-type-toggle {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.resource-type-toggle .toggle-btn {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    background: var(--white);
+    border: 2px solid var(--gray-300);
+    border-radius: var(--radius-lg);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--gray-700);
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.resource-type-toggle .toggle-btn:hover {
+    border-color: var(--primary);
+    background: var(--gray-50);
+}
+
+.resource-type-toggle .toggle-btn.active {
+    background: var(--gradient-primary);
+    color: var(--white);
+    border-color: var(--primary);
+}
+
+#textContentSection textarea {
+    font-family: 'Courier New', monospace;
+    font-size: 0.875rem;
+    line-height: 1.6;
+}

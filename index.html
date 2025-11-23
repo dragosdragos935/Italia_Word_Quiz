@@ -823,6 +823,15 @@
                         <p class="section-subtitle">Dictionaries, grammar books, and learning materials</p>
                     </div>
                     <div class="header-actions">
+                        <button class="btn btn-secondary" id="exportResourcesBtn">
+                            <i class="fas fa-download"></i>
+                            <span>Export</span>
+                        </button>
+                        <button class="btn btn-secondary" id="importResourcesBtn">
+                            <i class="fas fa-upload"></i>
+                            <span>Import</span>
+                        </button>
+                        <input type="file" id="importResourcesFile" accept=".json" style="display: none;">
                         <button class="btn btn-secondary" id="addLinkBtn">
                             <i class="fas fa-link"></i>
                             <span>Add Link</span>
@@ -1035,11 +1044,34 @@
                         <label for="resourceDescription">Description</label>
                         <textarea id="resourceDescription" placeholder="Brief description of the resource" rows="3"></textarea>
                     </div>
+                    
+                    <!-- Resource Type Toggle -->
                     <div class="form-group">
+                        <label>Resource Type</label>
+                        <div class="resource-type-toggle">
+                            <button type="button" class="toggle-btn active" id="uploadFileBtn" data-type="file">
+                                <i class="fas fa-upload"></i> Upload File
+                            </button>
+                            <button type="button" class="toggle-btn" id="writeTextBtn" data-type="text">
+                                <i class="fas fa-edit"></i> Write Text
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- File Upload Section -->
+                    <div class="form-group" id="fileUploadSection">
                         <label for="resourceFile">Upload File</label>
                         <input type="file" id="resourceFile" accept=".pdf,.doc,.docx,.txt,.epub">
                         <small>Supported: PDF, DOC, DOCX, TXT, EPUB</small>
                     </div>
+                    
+                    <!-- Text Content Section -->
+                    <div class="form-group" id="textContentSection" style="display: none;">
+                        <label for="resourceTextContent">Content</label>
+                        <textarea id="resourceTextContent" placeholder="Write your content here..." rows="10"></textarea>
+                        <small>You can write notes, grammar rules, vocabulary lists, etc.</small>
+                    </div>
+                    
                     <div class="form-actions">
                         <button type="button" class="btn btn-secondary" id="cancelResource">Cancel</button>
                         <button type="submit" class="btn btn-primary">Add Resource</button>

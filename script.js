@@ -659,33 +659,89 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
             this.hideModal('linkModal');
         });
 
+        // Resource type toggle
+        document.getElementById('uploadFileBtn')?.addEventListener('click', () => {
+            document.getElementById('uploadFileBtn').classList.add('active');
+            document.getElementById('writeTextBtn').classList.remove('active');
+            document.getElementById('fileUploadSection').style.display = 'block';
+            document.getElementById('textContentSection').style.display = 'none';
+        });
+
+        document.getElementById('writeTextBtn')?.addEventListener('click', () => {
+            document.getElementById('writeTextBtn').classList.add('active');
+            document.getElementById('uploadFileBtn').classList.remove('active');
+            document.getElementById('fileUploadSection').style.display = 'none';
+            document.getElementById('textContentSection').style.display = 'block';
+        });
+
         // Resource form submit
         document.getElementById('resourceForm')?.addEventListener('submit', (e) => {
             e.preventDefault();
-            const fileInput = document.getElementById('resourceFile');
-            const file = fileInput.files[0];
             
-            if (!file) {
-                this.showNotification('Please select a file to upload', 'error');
-                return;
-            }
+            const isFileUpload = document.getElementById('uploadFileBtn').classList.contains('active');
             
-            const reader = new FileReader();
-            reader.onload = (event) => {
+            if (isFileUpload) {
+                // File upload mode
+                const fileInput = document.getElementById('resourceFile');
+                const file = fileInput.files[0];
+                
+                if (!file) {
+                    this.showNotification('Please select a file to upload', 'error');
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const formData = {
+                        title: document.getElementById('resourceTitle').value,
+                        category: document.getElementById('resourceCategory').value,
+                        description: document.getElementById('resourceDescription').value,
+                        fileData: event.target.result,
+                        fileName: file.name,
+                        fileType: file.type,
+                        type: 'file'
+                    };
+                    
+                    this.addResource(formData);
+                    this.hideModal('resourceModal');
+                    document.getElementById('resourceForm').reset();
+                };
+                reader.readAsDataURL(file);
+            } else {
+                // Text content mode
+                const textContent = document.getElementById('resourceTextContent').value.trim();
+                
+                if (!textContent) {
+                    this.showNotification('Please write some content', 'error');
+                    return;
+                }
+                
                 const formData = {
                     title: document.getElementById('resourceTitle').value,
                     category: document.getElementById('resourceCategory').value,
                     description: document.getElementById('resourceDescription').value,
-                    fileData: event.target.result,
-                    fileName: file.name,
-                    fileType: file.type
+                    textContent: textContent,
+                    type: 'text'
                 };
                 
                 this.addResource(formData);
                 this.hideModal('resourceModal');
                 document.getElementById('resourceForm').reset();
-            };
-            reader.readAsDataURL(file);
+                document.getElementById('resourceTextContent').value = '';
+            }
+        });
+
+        // Export/Import Resources
+        document.getElementById('exportResourcesBtn')?.addEventListener('click', () => {
+            this.exportResources();
+        });
+
+        document.getElementById('importResourcesBtn')?.addEventListener('click', () => {
+            document.getElementById('importResourcesFile').click();
+        });
+
+        document.getElementById('importResourcesFile')?.addEventListener('change', (e) => {
+            this.importResources(e.target.files[0]);
         });
 
         // Link form submit
@@ -2237,8 +2293,10 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
 
         container.innerHTML = resources.map(resource => {
             const iconClass = resource.type === 'link' ? 'link' : 
+                             resource.type === 'text' ? 'grammar' :
                              resource.category === 'grammar' ? 'grammar' : 'pdf';
-            const icon = resource.type === 'link' ? 'fa-link' : 'fa-file-pdf';
+            const icon = resource.type === 'link' ? 'fa-link' : 
+                        resource.type === 'text' ? 'fa-file-alt' : 'fa-file-pdf';
             
             return `
                 <div class="resource-card slide-in-up">
@@ -2260,6 +2318,12 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
                             <i class="fas fa-external-link-alt"></i>
                             Open
                         </button>
+                        ${!resource.builtIn && resource.type === 'text' ? `
+                            <button class="resource-action-btn" onclick="app.editTextResource('${resource.id}')">
+                                <i class="fas fa-edit"></i>
+                                Edit
+                            </button>
+                        ` : ''}
                         ${!resource.builtIn ? `
                             <button class="resource-action-btn delete" onclick="app.deleteResource('${resource.id}')">
                                 <i class="fas fa-trash"></i>
@@ -2277,6 +2341,9 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
         
         if (resource.type === 'link') {
             window.open(resource.url, '_blank');
+        } else if (resource.type === 'text') {
+            // Open text content in a modal or new window
+            this.showTextResourceModal(resource);
         } else if (resource.path) {
             // Open PDF in new tab
             window.open(resource.path, '_blank');
@@ -2286,6 +2353,116 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
             const url = URL.createObjectURL(blob);
             window.open(url, '_blank');
         }
+    }
+
+    showTextResourceModal(resource) {
+        // Create a simple modal to display text content
+        const modal = document.createElement('div');
+        modal.className = 'modal active';
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 800px;">
+                <div class="modal-header">
+                    <h3>${resource.title}</h3>
+                    <button class="btn-close" onclick="this.closest('.modal').remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    ${resource.description ? `<p style="color: var(--gray-600); margin-bottom: 1rem;">${resource.description}</p>` : ''}
+                    <div style="background: var(--gray-50); padding: 1.5rem; border-radius: var(--radius-lg); white-space: pre-wrap; line-height: 1.6; max-height: 500px; overflow-y: auto;">
+                        ${resource.textContent}
+                    </div>
+                    <div style="margin-top: 1rem; display: flex; gap: 0.5rem; justify-content: flex-end;">
+                        <button class="btn btn-primary" onclick="app.editTextResource('${resource.id}'); this.closest('.modal').remove();">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        
+        // Close on background click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
+    }
+
+    editTextResource(id) {
+        const resource = this.theory.find(r => r.id === id);
+        if (!resource || resource.type !== 'text') return;
+
+        // Create edit modal
+        const modal = document.createElement('div');
+        modal.className = 'modal active';
+        modal.id = 'editTextResourceModal';
+        modal.innerHTML = `
+            <div class="modal-content" style="max-width: 900px;">
+                <div class="modal-header">
+                    <h3>Edit Resource</h3>
+                    <button class="btn-close" onclick="this.closest('.modal').remove()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="editTextResourceForm">
+                        <div class="form-group">
+                            <label for="editResourceTitle">Title</label>
+                            <input type="text" id="editResourceTitle" value="${resource.title}" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editResourceCategory">Category</label>
+                            <select id="editResourceCategory" required>
+                                <option value="dictionaries" ${resource.category === 'dictionaries' ? 'selected' : ''}>📖 Dictionary</option>
+                                <option value="grammar" ${resource.category === 'grammar' ? 'selected' : ''}>📝 Grammar</option>
+                                <option value="vocabulary" ${resource.category === 'vocabulary' ? 'selected' : ''}>📚 Vocabulary</option>
+                                <option value="exercises" ${resource.category === 'exercises' ? 'selected' : ''}>✏️ Exercises</option>
+                                <option value="reading" ${resource.category === 'reading' ? 'selected' : ''}>📰 Reading Material</option>
+                                <option value="audio" ${resource.category === 'audio' ? 'selected' : ''}>🎧 Audio/Video</option>
+                                <option value="custom" ${resource.category === 'custom' ? 'selected' : ''}>📁 Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="editResourceDescription">Description</label>
+                            <textarea id="editResourceDescription" rows="2">${resource.description || ''}</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="editResourceTextContent">Content</label>
+                            <textarea id="editResourceTextContent" rows="15" style="font-family: 'Courier New', monospace; font-size: 0.875rem;">${resource.textContent}</textarea>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" onclick="this.closest('.modal').remove()">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        // Handle form submit
+        document.getElementById('editTextResourceForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            resource.title = document.getElementById('editResourceTitle').value;
+            resource.category = document.getElementById('editResourceCategory').value;
+            resource.description = document.getElementById('editResourceDescription').value;
+            resource.textContent = document.getElementById('editResourceTextContent').value;
+
+            this.saveTheory();
+            this.renderTheory(this.currentResourceCategory || 'all');
+            modal.remove();
+            this.showNotification('Resource updated successfully! ✏️', 'success');
+        });
+
+        // Close on background click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.remove();
+            }
+        });
     }
     
     deleteResource(id) {
@@ -2303,18 +2480,87 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
             title: formData.title,
             category: formData.category,
             description: formData.description,
-            type: 'file',
-            fileData: formData.fileData,
-            fileName: formData.fileName,
-            fileType: formData.fileType,
+            type: formData.type || 'file',
             builtIn: false,
             createdAt: new Date().toISOString()
         };
+        
+        if (formData.type === 'text') {
+            resource.textContent = formData.textContent;
+        } else {
+            resource.fileData = formData.fileData;
+            resource.fileName = formData.fileName;
+            resource.fileType = formData.fileType;
+        }
         
         this.theory.push(resource);
         this.saveTheory();
         this.renderTheory(this.currentResourceCategory || 'all');
         this.showNotification('Resource added successfully! 📚', 'success');
+    }
+
+    exportResources() {
+        // Export only user resources (not built-in)
+        const userResources = this.theory.filter(r => !r.builtIn);
+        
+        if (userResources.length === 0) {
+            this.showNotification('No resources to export!', 'error');
+            return;
+        }
+
+        const data = {
+            resources: userResources,
+            exportDate: new Date().toISOString(),
+            version: '1.0'
+        };
+
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `resources-backup-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        this.showNotification('Resources exported successfully!', 'success');
+    }
+
+    importResources(file) {
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const data = JSON.parse(e.target.result);
+                
+                if (!data.resources || !Array.isArray(data.resources)) {
+                    this.showNotification('Invalid resources file format!', 'error');
+                    return;
+                }
+
+                const resourceCount = data.resources.length;
+                const confirmMessage = `This will import ${resourceCount} resources. Continue?`;
+                
+                if (!confirm(confirmMessage)) return;
+
+                // Add imported resources (mark as not built-in)
+                data.resources.forEach(resource => {
+                    resource.id = 'user-' + Date.now() + Math.random();
+                    resource.builtIn = false;
+                    this.theory.push(resource);
+                });
+
+                this.saveTheory();
+                this.renderTheory(this.currentResourceCategory || 'all');
+                this.showNotification(`Successfully imported ${resourceCount} resources!`, 'success');
+            } catch (error) {
+                console.error('Import error:', error);
+                this.showNotification('Error importing resources file!', 'error');
+            }
+        };
+        reader.readAsText(file);
     }
     
     addLink(formData) {
