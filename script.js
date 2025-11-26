@@ -1317,7 +1317,7 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
         }
 
         // Optimizare: Limitează numărul de carduri afișate simultan (pagination)
-        const cardsPerPage = 50;
+        const cardsPerPage = 100; // Increased from 50 to 100
         const displayList = list.slice(0, cardsPerPage);
         
         container.innerHTML = displayList.map(card => {
@@ -1395,7 +1395,7 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
             loadMoreBtn.remove();
         }
         
-        const cardsPerPage = 50;
+        const cardsPerPage = 100; // Increased from 50 to 100
         const nextBatch = this.remainingCards.slice(0, cardsPerPage);
         
         nextBatch.forEach(card => {
@@ -1405,8 +1405,11 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
                                card.sourceLanguage === 'it' ? card.sourceText : '';
             
             const cardHTML = `
-                <div class="card slide-in-up">
+                <div class="card slide-in-up" draggable="true" data-card-id="${card.id}" ondragstart="app.handleDragStart(event)" ondragover="app.handleDragOver(event)" ondrop="app.handleDrop(event)" ondragend="app.handleDragEnd(event)">
                     <div class="card-header">
+                        <div class="card-drag-handle" title="Drag to reorder">
+                            <i class="fas fa-grip-vertical"></i>
+                        </div>
                         <div class="card-category">${this.getCategoryLabel(card.category)}</div>
                         <div class="card-actions">
                             ${italianText ? `
@@ -1431,6 +1434,14 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
                         <span><i class="fas fa-redo"></i> ${card.attempts}</span>
                         <span><i class="fas fa-check"></i> ${card.correct}</span>
                         <span class="accuracy ${difficultyClass}"><i class="fas fa-chart-line"></i> ${accuracy}%</span>
+                        <div class="difficulty-selector">
+                            <select class="difficulty-dropdown" onchange="app.setCardDifficulty(${card.id}, this.value)">
+                                <option value="easy" ${(card.manualDifficulty || 'easy') === 'easy' ? 'selected' : ''}>😊 Easy</option>
+                                <option value="medium" ${card.manualDifficulty === 'medium' ? 'selected' : ''}>😐 Medium</option>
+                                <option value="hard" ${card.manualDifficulty === 'hard' ? 'selected' : ''}>😰 Hard</option>
+                                <option value="new" ${card.manualDifficulty === 'new' ? 'selected' : ''}>🆕 New</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             `;
