@@ -1300,7 +1300,11 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
         // Update results count
         const resultsEl = document.getElementById('resultsCount');
         if (resultsEl) {
-            resultsEl.textContent = `Showing ${list.length} of ${this.cards.length} cards`;
+            if (list.length === this.cards.length) {
+                resultsEl.textContent = `Showing all ${list.length} cards`;
+            } else {
+                resultsEl.textContent = `Showing ${list.length} of ${this.cards.length} cards (${this.cards.length - list.length} filtered out)`;
+            }
         }
 
         if (list.length === 0) {
@@ -1317,7 +1321,7 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
         }
 
         // Optimizare: Limitează numărul de carduri afișate simultan (pagination)
-        const cardsPerPage = 100; // Increased from 50 to 100
+        const cardsPerPage = 50;
         const displayList = list.slice(0, cardsPerPage);
         
         container.innerHTML = displayList.map(card => {
@@ -1371,19 +1375,25 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
             `;
         }).join('');
         
-        // Adaugă buton "Load More" dacă sunt mai multe carduri
+        // Adaugă buton "Load More" sau "Show All" dacă sunt mai multe carduri
         if (list.length > cardsPerPage) {
             container.innerHTML += `
                 <div class="load-more-container" style="grid-column: 1 / -1; text-align: center; padding: 2rem;">
-                    <button class="btn btn-primary" onclick="app.loadMoreCards()">
+                    <button class="btn btn-primary" onclick="app.loadMoreCards()" style="margin-right: 1rem;">
                         <i class="fas fa-chevron-down"></i>
                         Load More (${list.length - cardsPerPage} remaining)
+                    </button>
+                    <button class="btn btn-secondary" onclick="app.showAllCards()">
+                        <i class="fas fa-list"></i>
+                        Show All ${list.length} Cards
                     </button>
                 </div>
             `;
             this.remainingCards = list.slice(cardsPerPage);
+            this.allFilteredCards = list; // Store all filtered cards
         } else {
             this.remainingCards = [];
+            this.allFilteredCards = [];
         }
     }
     
@@ -1395,7 +1405,7 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
             loadMoreBtn.remove();
         }
         
-        const cardsPerPage = 100; // Increased from 50 to 100
+        const cardsPerPage = 50;
         const nextBatch = this.remainingCards.slice(0, cardsPerPage);
         
         nextBatch.forEach(card => {
@@ -1454,13 +1464,82 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
         if (this.remainingCards.length > 0) {
             container.insertAdjacentHTML('beforeend', `
                 <div class="load-more-container" style="grid-column: 1 / -1; text-align: center; padding: 2rem;">
-                    <button class="btn btn-primary" onclick="app.loadMoreCards()">
+                    <button class="btn btn-primary" onclick="app.loadMoreCards()" style="margin-right: 1rem;">
                         <i class="fas fa-chevron-down"></i>
                         Load More (${this.remainingCards.length} remaining)
+                    </button>
+                    <button class="btn btn-secondary" onclick="app.showAllCards()">
+                        <i class="fas fa-list"></i>
+                        Show All Remaining
                     </button>
                 </div>
             `);
         }
+    }
+
+    showAllCards() {
+        const container = document.getElementById('cardsGrid');
+        const loadMoreBtn = container.querySelector('.load-more-container');
+        
+        if (loadMoreBtn) {
+            loadMoreBtn.remove();
+        }
+        
+        // Load all remaining cards at once
+        const allRemaining = this.remainingCards;
+        
+        allRemaining.forEach(card => {
+            const accuracy = card.attempts > 0 ? Math.round((card.correct / card.attempts) * 100) : 0;
+            const difficultyClass = accuracy > 80 ? 'easy' : accuracy > 50 ? 'medium' : 'hard';
+            const italianText = card.targetLanguage === 'it' ? card.targetText : 
+                               card.sourceLanguage === 'it' ? card.sourceText : '';
+            
+            const cardHTML = `
+                <div class="card slide-in-up" draggable="true" data-card-id="${card.id}" ondragstart="app.handleDragStart(event)" ondragover="app.handleDragOver(event)" ondrop="app.handleDrop(event)" ondragend="app.handleDragEnd(event)">
+                    <div class="card-header">
+                        <div class="card-drag-handle" title="Drag to reorder">
+                            <i class="fas fa-grip-vertical"></i>
+                        </div>
+                        <div class="card-category">${this.getCategoryLabel(card.category)}</div>
+                        <div class="card-actions">
+                            ${italianText ? `
+                                <button class="card-action pronunciation" onclick="app.pronounceCard('${italianText.replace(/'/g, "\\'")}', 'it')" title="Pronunție Italiană">
+                                    <i class="fas fa-volume-up"></i>
+                                </button>
+                            ` : ''}
+                            <button class="card-action" onclick="app.editCard(${card.id})" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="card-action delete" onclick="app.deleteCard(${card.id})" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-direction">${this.getLanguageName(card.sourceLanguage)} → ${this.getLanguageName(card.targetLanguage)}</div>
+                        <div class="card-text" data-lang="${this.getLanguageFlag(card.sourceLanguage)}">${card.sourceText}</div>
+                        <div class="card-translation" data-lang="${this.getLanguageFlag(card.targetLanguage)}">${card.targetText}</div>
+                    </div>
+                    <div class="card-stats">
+                        <span><i class="fas fa-redo"></i> ${card.attempts}</span>
+                        <span><i class="fas fa-check"></i> ${card.correct}</span>
+                        <span class="accuracy ${difficultyClass}"><i class="fas fa-chart-line"></i> ${accuracy}%</span>
+                        <div class="difficulty-selector">
+                            <select class="difficulty-dropdown" onchange="app.setCardDifficulty(${card.id}, this.value)">
+                                <option value="easy" ${(card.manualDifficulty || 'easy') === 'easy' ? 'selected' : ''}>😊 Easy</option>
+                                <option value="medium" ${card.manualDifficulty === 'medium' ? 'selected' : ''}>😐 Medium</option>
+                                <option value="hard" ${card.manualDifficulty === 'hard' ? 'selected' : ''}>😰 Hard</option>
+                                <option value="new" ${card.manualDifficulty === 'new' ? 'selected' : ''}>🆕 New</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', cardHTML);
+        });
+        
+        this.remainingCards = [];
+        this.showNotification(`Loaded all ${allRemaining.length} remaining cards!`, 'success');
     }
 
     // Quiz Management
