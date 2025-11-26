@@ -43,6 +43,9 @@ class LanguageLearningApp {
         this.remainingCards = [];
         this.saveTimeout = null;
         
+        // Quiz card selection
+        this.selectedCardIds = new Set();
+        
         this.init();
     }
 
@@ -348,6 +351,36 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
         // Quiz
         document.getElementById('startQuizBtn')?.addEventListener('click', () => {
             this.startQuiz();
+        });
+
+        // Card Selection for Quiz
+        document.getElementById('toggleCardSelection')?.addEventListener('click', () => {
+            this.toggleCardSelection();
+        });
+
+        document.getElementById('selectAllCards')?.addEventListener('click', () => {
+            this.selectAllCards();
+        });
+
+        document.getElementById('deselectAllCards')?.addEventListener('click', () => {
+            this.deselectAllCards();
+        });
+
+        // Difficulty filters
+        document.getElementById('selectNewCards')?.addEventListener('click', () => {
+            this.selectCardsByDifficulty('new');
+        });
+
+        document.getElementById('selectHardCards')?.addEventListener('click', () => {
+            this.selectCardsByDifficulty('hard');
+        });
+
+        document.getElementById('selectMediumCards')?.addEventListener('click', () => {
+            this.selectCardsByDifficulty('medium');
+        });
+
+        document.getElementById('selectEasyCards')?.addEventListener('click', () => {
+            this.selectCardsByDifficulty('easy');
         });
 
         document.getElementById('closeQuiz')?.addEventListener('click', () => {
@@ -1025,8 +1058,11 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
                            card.sourceLanguage === 'it' ? card.sourceText : '';
         
         const cardHTML = `
-            <div class="card slide-in-up">
+            <div class="card slide-in-up" draggable="true" data-card-id="${card.id}" ondragstart="app.handleDragStart(event)" ondragover="app.handleDragOver(event)" ondrop="app.handleDrop(event)" ondragend="app.handleDragEnd(event)">
                 <div class="card-header">
+                    <div class="card-drag-handle" title="Drag to reorder">
+                        <i class="fas fa-grip-vertical"></i>
+                    </div>
                     <div class="card-category">${this.getCategoryLabel(card.category)}</div>
                     <div class="card-actions">
                         ${italianText ? `
@@ -1284,8 +1320,11 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
                                card.sourceLanguage === 'it' ? card.sourceText : '';
             
             return `
-                <div class="card slide-in-up">
+                <div class="card slide-in-up" draggable="true" data-card-id="${card.id}" ondragstart="app.handleDragStart(event)" ondragover="app.handleDragOver(event)" ondrop="app.handleDrop(event)" ondragend="app.handleDragEnd(event)">
                     <div class="card-header">
+                        <div class="card-drag-handle" title="Drag to reorder">
+                            <i class="fas fa-grip-vertical"></i>
+                        </div>
                         <div class="card-category">${this.getCategoryLabel(card.category)}</div>
                         <div class="card-actions">
                             ${italianText ? `
@@ -1407,10 +1446,16 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
         const selectedMode = document.querySelector('input[name="quizMode"]:checked').value;
         this.quizMode = selectedMode;
 
-        // Build quiz list from filters
-        const filtered = this.cards;
+        // Build quiz list - use selected cards if any, otherwise use all
+        let filtered;
+        if (this.selectedCardIds && this.selectedCardIds.size > 0) {
+            filtered = this.cards.filter(card => this.selectedCardIds.has(card.id));
+        } else {
+            filtered = this.cards;
+        }
+
         if (filtered.length === 0) {
-            this.showNotification('Nu există carduri care să corespundă filtrării pentru quiz.', 'error');
+            this.showNotification('Please select at least one card for the quiz!', 'error');
             return;
         }
 
@@ -1432,8 +1477,202 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
 
         // Show first question
         this.showQuestion();
+    }
+
+    toggleCardSelection() {
+        const panel = document.getElementById('cardSelectionPanel');
+        const btn = document.getElementById('toggleCardSelection');
         
-       
+        if (panel.style.display === 'none') {
+            panel.style.display = 'block';
+            btn.innerHTML = '<i class="fas fa-times"></i> Hide Card Selection';
+            this.renderCardSelection();
+        } else {
+            panel.style.display = 'none';
+            btn.innerHTML = '<i class="fas fa-check-square"></i> Select Cards for Quiz';
+        }
+    }
+
+    renderCardSelection() {
+        const container = document.getElementById('cardSelectionList');
+        
+        if (this.cards.length === 0) {
+            container.innerHTML = '<p style="text-align: center; color: var(--gray-600);">No cards available</p>';
+            return;
+        }
+
+        // Initialize selectedCardIds if not exists
+        if (!this.selectedCardIds) {
+            this.selectedCardIds = new Set();
+        }
+
+        container.innerHTML = this.cards.map(card => {
+            const isSelected = this.selectedCardIds.has(card.id);
+            return `
+                <div class="selection-item ${isSelected ? 'selected' : ''}" data-card-id="${card.id}">
+                    <label class="selection-checkbox">
+                        <input type="checkbox" ${isSelected ? 'checked' : ''} onchange="app.toggleCardSelect(${card.id})">
+                        <span class="checkbox-custom"></span>
+                    </label>
+                    <div class="selection-content">
+                        <div class="selection-text">${card.sourceText}</div>
+                        <div class="selection-translation">${card.targetText}</div>
+                        <div class="selection-meta">
+                            <span class="selection-category">${this.getCategoryLabel(card.category)}</span>
+                            <span class="selection-direction">${this.getLanguageName(card.sourceLanguage)} → ${this.getLanguageName(card.targetLanguage)}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        this.updateSelectedCount();
+    }
+
+    toggleCardSelect(cardId) {
+        if (!this.selectedCardIds) {
+            this.selectedCardIds = new Set();
+        }
+
+        if (this.selectedCardIds.has(cardId)) {
+            this.selectedCardIds.delete(cardId);
+        } else {
+            this.selectedCardIds.add(cardId);
+        }
+
+        // Update UI
+        const item = document.querySelector(`[data-card-id="${cardId}"]`);
+        if (item) {
+            item.classList.toggle('selected');
+        }
+
+        this.updateSelectedCount();
+    }
+
+    selectAllCards() {
+        this.selectedCardIds = new Set(this.cards.map(card => card.id));
+        this.renderCardSelection();
+    }
+
+    deselectAllCards() {
+        this.selectedCardIds = new Set();
+        this.renderCardSelection();
+    }
+
+    selectCardsByDifficulty(difficulty) {
+        this.selectedCardIds = new Set();
+        
+        this.cards.forEach(card => {
+            const accuracy = card.attempts > 0 ? (card.correct / card.attempts) * 100 : 0;
+            
+            let shouldSelect = false;
+            switch(difficulty) {
+                case 'new':
+                    shouldSelect = card.attempts === 0;
+                    break;
+                case 'hard':
+                    shouldSelect = card.attempts > 0 && accuracy < 50;
+                    break;
+                case 'medium':
+                    shouldSelect = card.attempts > 0 && accuracy >= 50 && accuracy <= 80;
+                    break;
+                case 'easy':
+                    shouldSelect = card.attempts > 0 && accuracy > 80;
+                    break;
+            }
+            
+            if (shouldSelect) {
+                this.selectedCardIds.add(card.id);
+            }
+        });
+        
+        this.renderCardSelection();
+        
+        const count = this.selectedCardIds.size;
+        const difficultyNames = {
+            'new': 'New',
+            'hard': 'Hard',
+            'medium': 'Medium',
+            'easy': 'Easy'
+        };
+        this.showNotification(`Selected ${count} ${difficultyNames[difficulty]} cards!`, 'success');
+    }
+
+    updateSelectedCount() {
+        const count = this.selectedCardIds ? this.selectedCardIds.size : 0;
+        const el = document.getElementById('quizSelectedCards');
+        if (el) {
+            el.textContent = count;
+        }
+    }
+
+    // Drag and Drop for reordering cards
+    handleDragStart(event) {
+        const card = event.target.closest('.card');
+        if (!card) return;
+        
+        this.draggedCard = card;
+        card.classList.add('dragging');
+        event.dataTransfer.effectAllowed = 'move';
+        event.dataTransfer.setData('text/html', card.innerHTML);
+    }
+
+    handleDragOver(event) {
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
+        
+        const card = event.target.closest('.card');
+        if (!card || card === this.draggedCard) return;
+        
+        const container = document.getElementById('cardsGrid');
+        const cards = [...container.querySelectorAll('.card:not(.dragging)')];
+        const afterElement = this.getDragAfterElement(container, event.clientY);
+        
+        if (afterElement == null) {
+            container.appendChild(this.draggedCard);
+        } else {
+            container.insertBefore(this.draggedCard, afterElement);
+        }
+    }
+
+    handleDrop(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        
+        // Update cards array order based on DOM order
+        const container = document.getElementById('cardsGrid');
+        const cardElements = [...container.querySelectorAll('.card')];
+        const newOrder = cardElements.map(el => {
+            const cardId = parseInt(el.dataset.cardId);
+            return this.cards.find(c => c.id === cardId);
+        }).filter(Boolean);
+        
+        this.cards = newOrder;
+        this.saveCards();
+        this.showNotification('Card order updated!', 'success');
+    }
+
+    handleDragEnd(event) {
+        const card = event.target.closest('.card');
+        if (card) {
+            card.classList.remove('dragging');
+        }
+        this.draggedCard = null;
+    }
+
+    getDragAfterElement(container, y) {
+        const draggableElements = [...container.querySelectorAll('.card:not(.dragging)')];
+        
+        return draggableElements.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            const offset = y - box.top - box.height / 2;
+            
+            if (offset < 0 && offset > closest.offset) {
+                return { offset: offset, element: child };
+            } else {
+                return closest;
+            }
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
     }
 
     closeQuiz() {

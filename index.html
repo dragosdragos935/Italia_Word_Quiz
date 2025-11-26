@@ -641,6 +641,56 @@
                                 <span class="stat-number" id="quizTotalCards">0</span>
                                 <span class="stat-label">Cards Available</span>
                             </div>
+                            <div class="stat">
+                                <span class="stat-number" id="quizSelectedCards">0</span>
+                                <span class="stat-label">Selected</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Card Selection Toggle -->
+                        <div class="quiz-selection-toggle">
+                            <button class="btn btn-secondary" id="toggleCardSelection">
+                                <i class="fas fa-check-square"></i>
+                                Select Cards for Quiz
+                            </button>
+                        </div>
+                        
+                        <!-- Card Selection Panel -->
+                        <div class="card-selection-panel" id="cardSelectionPanel" style="display: none;">
+                            <div class="selection-header">
+                                <h4>Select Cards to Practice</h4>
+                                <div class="selection-actions">
+                                    <button class="btn btn-sm btn-secondary" id="selectAllCards">
+                                        <i class="fas fa-check-double"></i> Select All
+                                    </button>
+                                    <button class="btn btn-sm btn-secondary" id="deselectAllCards">
+                                        <i class="fas fa-times"></i> Deselect All
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Difficulty Filters -->
+                            <div class="difficulty-filters">
+                                <label>Quick Select by Difficulty:</label>
+                                <div class="difficulty-buttons">
+                                    <button class="btn-difficulty new" id="selectNewCards" title="Cards not practiced yet">
+                                        <i class="fas fa-star"></i> New (0%)
+                                    </button>
+                                    <button class="btn-difficulty hard" id="selectHardCards" title="Accuracy < 50%">
+                                        <i class="fas fa-frown"></i> Hard (< 50%)
+                                    </button>
+                                    <button class="btn-difficulty medium" id="selectMediumCards" title="Accuracy 50-80%">
+                                        <i class="fas fa-meh"></i> Medium (50-80%)
+                                    </button>
+                                    <button class="btn-difficulty easy" id="selectEasyCards" title="Accuracy > 80%">
+                                        <i class="fas fa-smile"></i> Easy (> 80%)
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="selection-list" id="cardSelectionList">
+                                <!-- Cards will be populated here -->
+                            </div>
                         </div>
                     </div>
                 </div>
