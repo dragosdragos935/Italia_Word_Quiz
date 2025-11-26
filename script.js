@@ -39,6 +39,10 @@ class LanguageLearningApp {
         this.matchingPairs = [];
         this.selectedMatchingItems = [];
         
+        // Performance optimization
+        this.remainingCards = [];
+        this.saveTimeout = null;
+        
         this.init();
     }
 
