@@ -981,14 +981,78 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
         };
 
         this.cards.push(card);
-        this.saveCards();
+        
+        // Optimizare: Salvare asincronă
+        this.debouncedSave();
+        
+        // Optimizare: Adaugă doar noul card în loc să re-renderizezi tot
+        this.addCardToDOM(card);
+        
         this.updateStats();
-        this.renderCards();
         this.hideAddCardForm();
         this.showNotification('Card added successfully!', 'success');
 
-		// Auto-add to dictionary
-		this.addDictionaryFromCard(card);
+		// Auto-add to dictionary (async)
+		setTimeout(() => this.addDictionaryFromCard(card), 0);
+    }
+
+    // Debounced save pentru performanță
+    debouncedSave() {
+        clearTimeout(this.saveTimeout);
+        this.saveTimeout = setTimeout(() => {
+            this.saveCards();
+        }, 300);
+    }
+
+    // Adaugă un singur card în DOM fără să re-renderizezi tot
+    addCardToDOM(card) {
+        const container = document.getElementById('cardsGrid');
+        
+        // Șterge empty state dacă există
+        const emptyState = container.querySelector('.empty-state');
+        if (emptyState) {
+            container.innerHTML = '';
+        }
+        
+        const accuracy = card.attempts > 0 ? Math.round((card.correct / card.attempts) * 100) : 0;
+        const difficultyClass = accuracy > 80 ? 'easy' : accuracy > 50 ? 'medium' : 'hard';
+        
+        const italianText = card.targetLanguage === 'it' ? card.targetText : 
+                           card.sourceLanguage === 'it' ? card.sourceText : '';
+        
+        const cardHTML = `
+            <div class="card slide-in-up">
+                <div class="card-header">
+                    <div class="card-category">${this.getCategoryLabel(card.category)}</div>
+                    <div class="card-actions">
+                        ${italianText ? `
+                            <button class="card-action pronunciation" onclick="app.pronounceCard('${italianText.replace(/'/g, "\\'")}', 'it')" title="Pronunție Italiană">
+                                <i class="fas fa-volume-up"></i>
+                            </button>
+                        ` : ''}
+                        <button class="card-action" onclick="app.editCard(${card.id})" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="card-action delete" onclick="app.deleteCard(${card.id})" title="Delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="card-direction">${this.getLanguageName(card.sourceLanguage)} → ${this.getLanguageName(card.targetLanguage)}</div>
+                    <div class="card-text" data-lang="${this.getLanguageFlag(card.sourceLanguage)}">${card.sourceText}</div>
+                    <div class="card-translation" data-lang="${this.getLanguageFlag(card.targetLanguage)}">${card.targetText}</div>
+                </div>
+                <div class="card-stats">
+                    <span><i class="fas fa-redo"></i> ${card.attempts}</span>
+                    <span><i class="fas fa-check"></i> ${card.correct}</span>
+                    <span class="accuracy ${difficultyClass}"><i class="fas fa-chart-line"></i> ${accuracy}%</span>
+                </div>
+            </div>
+        `;
+        
+        // Adaugă la început (cel mai recent)
+        container.insertAdjacentHTML('afterbegin', cardHTML);
     }
 
 	addDictionaryFromCard(card) {
@@ -1000,8 +1064,7 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
 			e.targetWord === card.targetText
 		);
 		if (exists) {
-			this.renderDictionary();
-			return;
+			return; // Nu re-renderiza dicționarul
 		}
 		const entry = {
 			id: Date.now() + Math.floor(Math.random() * 1000),
@@ -1015,8 +1078,7 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
 		};
 		this.dictionary.push(entry);
 		this.saveDictionary();
-		this.renderDictionary();
-		this.showNotification('Word added to dictionary automatically.', 'success');
+		// Nu re-renderiza dicționarul automat pentru performanță
 	}
 
     deleteCard(cardId) {
@@ -1205,7 +1267,11 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
             return;
         }
 
-        container.innerHTML = list.map(card => {
+        // Optimizare: Limitează numărul de carduri afișate simultan (pagination)
+        const cardsPerPage = 50;
+        const displayList = list.slice(0, cardsPerPage);
+        
+        container.innerHTML = displayList.map(card => {
             const accuracy = card.attempts > 0 ? Math.round((card.correct / card.attempts) * 100) : 0;
             const difficultyClass = accuracy > 80 ? 'easy' : accuracy > 50 ? 'medium' : 'hard';
             
@@ -1244,6 +1310,86 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
                 </div>
             `;
         }).join('');
+        
+        // Adaugă buton "Load More" dacă sunt mai multe carduri
+        if (list.length > cardsPerPage) {
+            container.innerHTML += `
+                <div class="load-more-container" style="grid-column: 1 / -1; text-align: center; padding: 2rem;">
+                    <button class="btn btn-primary" onclick="app.loadMoreCards()">
+                        <i class="fas fa-chevron-down"></i>
+                        Load More (${list.length - cardsPerPage} remaining)
+                    </button>
+                </div>
+            `;
+            this.remainingCards = list.slice(cardsPerPage);
+        } else {
+            this.remainingCards = [];
+        }
+    }
+    
+    loadMoreCards() {
+        const container = document.getElementById('cardsGrid');
+        const loadMoreBtn = container.querySelector('.load-more-container');
+        
+        if (loadMoreBtn) {
+            loadMoreBtn.remove();
+        }
+        
+        const cardsPerPage = 50;
+        const nextBatch = this.remainingCards.slice(0, cardsPerPage);
+        
+        nextBatch.forEach(card => {
+            const accuracy = card.attempts > 0 ? Math.round((card.correct / card.attempts) * 100) : 0;
+            const difficultyClass = accuracy > 80 ? 'easy' : accuracy > 50 ? 'medium' : 'hard';
+            const italianText = card.targetLanguage === 'it' ? card.targetText : 
+                               card.sourceLanguage === 'it' ? card.sourceText : '';
+            
+            const cardHTML = `
+                <div class="card slide-in-up">
+                    <div class="card-header">
+                        <div class="card-category">${this.getCategoryLabel(card.category)}</div>
+                        <div class="card-actions">
+                            ${italianText ? `
+                                <button class="card-action pronunciation" onclick="app.pronounceCard('${italianText.replace(/'/g, "\\'")}', 'it')" title="Pronunție Italiană">
+                                    <i class="fas fa-volume-up"></i>
+                                </button>
+                            ` : ''}
+                            <button class="card-action" onclick="app.editCard(${card.id})" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="card-action delete" onclick="app.deleteCard(${card.id})" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-direction">${this.getLanguageName(card.sourceLanguage)} → ${this.getLanguageName(card.targetLanguage)}</div>
+                        <div class="card-text" data-lang="${this.getLanguageFlag(card.sourceLanguage)}">${card.sourceText}</div>
+                        <div class="card-translation" data-lang="${this.getLanguageFlag(card.targetLanguage)}">${card.targetText}</div>
+                    </div>
+                    <div class="card-stats">
+                        <span><i class="fas fa-redo"></i> ${card.attempts}</span>
+                        <span><i class="fas fa-check"></i> ${card.correct}</span>
+                        <span class="accuracy ${difficultyClass}"><i class="fas fa-chart-line"></i> ${accuracy}%</span>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', cardHTML);
+        });
+        
+        this.remainingCards = this.remainingCards.slice(cardsPerPage);
+        
+        // Adaugă din nou butonul dacă mai sunt carduri
+        if (this.remainingCards.length > 0) {
+            container.insertAdjacentHTML('beforeend', `
+                <div class="load-more-container" style="grid-column: 1 / -1; text-align: center; padding: 2rem;">
+                    <button class="btn btn-primary" onclick="app.loadMoreCards()">
+                        <i class="fas fa-chevron-down"></i>
+                        Load More (${this.remainingCards.length} remaining)
+                    </button>
+                </div>
+            `);
+        }
     }
 
     // Quiz Management
