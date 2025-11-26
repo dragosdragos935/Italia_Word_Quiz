@@ -1014,6 +1014,7 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
             targetText,
             attempts: 0,
             correct: 0,
+            manualDifficulty: 'easy', // Default difficulty
             createdAt: new Date().toISOString()
         };
 
@@ -1087,6 +1088,14 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
                     <span><i class="fas fa-redo"></i> ${card.attempts}</span>
                     <span><i class="fas fa-check"></i> ${card.correct}</span>
                     <span class="accuracy ${difficultyClass}"><i class="fas fa-chart-line"></i> ${accuracy}%</span>
+                    <div class="difficulty-selector">
+                        <select class="difficulty-dropdown" onchange="app.setCardDifficulty(${card.id}, this.value)">
+                            <option value="easy" ${(card.manualDifficulty || 'easy') === 'easy' ? 'selected' : ''}>😊 Easy</option>
+                            <option value="medium" ${card.manualDifficulty === 'medium' ? 'selected' : ''}>😐 Medium</option>
+                            <option value="hard" ${card.manualDifficulty === 'hard' ? 'selected' : ''}>😰 Hard</option>
+                            <option value="new" ${card.manualDifficulty === 'new' ? 'selected' : ''}>🆕 New</option>
+                        </select>
+                    </div>
                 </div>
             </div>
         `;
@@ -1349,6 +1358,14 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
                         <span><i class="fas fa-redo"></i> ${card.attempts}</span>
                         <span><i class="fas fa-check"></i> ${card.correct}</span>
                         <span class="accuracy ${difficultyClass}"><i class="fas fa-chart-line"></i> ${accuracy}%</span>
+                        <div class="difficulty-selector">
+                            <select class="difficulty-dropdown" onchange="app.setCardDifficulty(${card.id}, this.value)">
+                                <option value="easy" ${(card.manualDifficulty || 'easy') === 'easy' ? 'selected' : ''}>😊 Easy</option>
+                                <option value="medium" ${card.manualDifficulty === 'medium' ? 'selected' : ''}>😐 Medium</option>
+                                <option value="hard" ${card.manualDifficulty === 'hard' ? 'selected' : ''}>😰 Hard</option>
+                                <option value="new" ${card.manualDifficulty === 'new' ? 'selected' : ''}>🆕 New</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             `;
@@ -1563,22 +1580,31 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
         this.selectedCardIds = new Set();
         
         this.cards.forEach(card => {
+            // Use manual difficulty if set, otherwise calculate from stats
+            const manualDiff = card.manualDifficulty;
             const accuracy = card.attempts > 0 ? (card.correct / card.attempts) * 100 : 0;
             
             let shouldSelect = false;
-            switch(difficulty) {
-                case 'new':
-                    shouldSelect = card.attempts === 0;
-                    break;
-                case 'hard':
-                    shouldSelect = card.attempts > 0 && accuracy < 50;
-                    break;
-                case 'medium':
-                    shouldSelect = card.attempts > 0 && accuracy >= 50 && accuracy <= 80;
-                    break;
-                case 'easy':
-                    shouldSelect = card.attempts > 0 && accuracy > 80;
-                    break;
+            
+            if (manualDiff) {
+                // Use manual difficulty
+                shouldSelect = manualDiff === difficulty;
+            } else {
+                // Calculate from stats
+                switch(difficulty) {
+                    case 'new':
+                        shouldSelect = card.attempts === 0;
+                        break;
+                    case 'hard':
+                        shouldSelect = card.attempts > 0 && accuracy < 50;
+                        break;
+                    case 'medium':
+                        shouldSelect = card.attempts > 0 && accuracy >= 50 && accuracy <= 80;
+                        break;
+                    case 'easy':
+                        shouldSelect = card.attempts > 0 && accuracy > 80;
+                        break;
+                }
             }
             
             if (shouldSelect) {
@@ -1596,6 +1622,23 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
             'easy': 'Easy'
         };
         this.showNotification(`Selected ${count} ${difficultyNames[difficulty]} cards!`, 'success');
+    }
+
+    setCardDifficulty(cardId, difficulty) {
+        const card = this.cards.find(c => c.id === cardId);
+        if (!card) return;
+        
+        card.manualDifficulty = difficulty;
+        this.saveCards();
+        
+        const difficultyNames = {
+            'new': '🆕 New',
+            'easy': '😊 Easy',
+            'medium': '😐 Medium',
+            'hard': '😰 Hard'
+        };
+        
+        this.showNotification(`Card difficulty set to ${difficultyNames[difficulty]}`, 'success');
     }
 
     updateSelectedCount() {
