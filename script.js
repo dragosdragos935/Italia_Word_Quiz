@@ -64,12 +64,18 @@ class LanguageLearningApp {
         const saved = localStorage.getItem('flashcards');
         const cards = saved ? JSON.parse(saved) : [];
         
-        // Migrate old Romanian category values to English
+        // Migrate old Romanian category values to English and add missing properties
         return cards.map(card => {
             if (card.category === 'cuvinte') card.category = 'words';
             if (card.category === 'fraze') card.category = 'phrases';
             if (card.category === 'propozitii') card.category = 'sentences';
             if (card.category === 'texte') card.category = 'texts';
+            
+            // Add learned property if missing (default to false)
+            if (card.learned === undefined) {
+                card.learned = false;
+            }
+            
             return card;
         });
     }
