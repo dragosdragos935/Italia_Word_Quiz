@@ -46,6 +46,10 @@ class LanguageLearningApp {
         // Quiz card selection
         this.selectedCardIds = new Set();
         
+        // Mistake tracking
+        this.mistakeCards = this.loadMistakeCards();
+        this.currentQuizMistakes = new Set(); // Track mistakes in current quiz session
+        
         this.init();
     }
 
@@ -57,6 +61,7 @@ class LanguageLearningApp {
         this.renderTheory('all'); // Initialize resources with 'all' category
         this.updateLanguageLabels();
         this.currentResourceCategory = 'all'; // Set default category
+        this.updateMistakeCount(); // Update mistake badge
     }
 
     // Data Management
@@ -246,6 +251,24 @@ importDictionary(file) {
 
     savePronunciations() {
         localStorage.setItem('pronunciations', JSON.stringify(this.pronunciations));
+    }
+
+    loadMistakeCards() {
+        const saved = localStorage.getItem('mistakeCards');
+        return saved ? new Set(JSON.parse(saved)) : new Set();
+    }
+
+    saveMistakeCards() {
+        localStorage.setItem('mistakeCards', JSON.stringify([...this.mistakeCards]));
+    }
+
+    updateMistakeCount() {
+        const count = this.mistakeCards ? this.mistakeCards.size : 0;
+        const badge = document.getElementById('mistakeCount');
+        if (badge) {
+            badge.textContent = count;
+            badge.style.display = count > 0 ? 'flex' : 'none';
+        }
     }
 
     // Event Listeners
@@ -1518,6 +1541,19 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
                 this.showNotification('Selected cards not found!', 'error');
                 return;
             }
+        } else if (selectedMode === 'mistakeReview') {
+            // Use only mistake cards
+            if (!this.mistakeCards || this.mistakeCards.size === 0) {
+                this.showNotification('No mistakes to review! Great job! 🎉', 'success');
+                return;
+            }
+            filtered = this.cards.filter(card => this.mistakeCards.has(card.id));
+            if (filtered.length === 0) {
+                this.showNotification('Mistake cards not found!', 'error');
+                return;
+            }
+            // Reset current quiz mistakes tracker
+            this.currentQuizMistakes = new Set();
         }
 
         if (filtered.length === 0) {
@@ -1977,7 +2013,8 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
             'descending': 'Descending Order (Hard → Easy)',
             'learnedOnly': '✅ Learned Cards Only',
             'unlearnedOnly': '⭕ Unlearned Cards Only',
-            'selectedOnly': '✔️ Selected Cards Only'
+            'selectedOnly': '✔️ Selected Cards Only',
+            'mistakeReview': '⚠️ Mistake Review'
         };
         document.getElementById('questionType').textContent = modeLabels[this.quizMode] || 'Typing Mode';
     
@@ -2077,6 +2114,7 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
             case 'learnedOnly':
             case 'unlearnedOnly':
             case 'selectedOnly':
+            case 'mistakeReview':
                 // These are filtering modes, use typing as default interaction
                 document.getElementById('typingMode').style.display = 'block';
                 break;
@@ -2169,6 +2207,13 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
             this.isAnswered = true;
             this.handleAnswer(true);
             
+            // If answered correctly on first try, remove from mistakes
+            if (!this.currentQuizMistakes.has(this.currentQuestion.card.id)) {
+                this.mistakeCards.delete(this.currentQuestion.card.id);
+                this.saveMistakeCards();
+                this.updateMistakeCount();
+            }
+            
             // Update hint area with success message
             hintElement.textContent = `✅ CORECT! Răspunsul: ${this.currentQuestion.correctAnswer}`;
             hintElement.style.color = '#10b981';
@@ -2188,6 +2233,12 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
             this.currentQuestion.card.attempts++;
             this.saveCards();
             this.updateStats();
+            
+            // Add to mistakes if not already there
+            this.mistakeCards.add(this.currentQuestion.card.id);
+            this.currentQuizMistakes.add(this.currentQuestion.card.id);
+            this.saveMistakeCards();
+            this.updateMistakeCount();
             
             // Update hint area with error message
             hintElement.textContent = `❌ GREȘIT! Încearcă din nou`;
@@ -2343,6 +2394,35 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
     endQuiz() {
         const totalQuestions = this.currentQuiz.length;
         const accuracy = Math.round((this.correctCount / totalQuestions) * 100);
+        
+        // Check if there are mistakes in this quiz session
+        const mistakesInSession = this.currentQuizMistakes.size;
+        
+        if (mistakesInSession > 0) {
+            // Show retry option for mistakes
+            const retryMessage = `Quiz completed! Accuracy: ${accuracy}%\n\nYou made mistakes on ${mistakesInSession} card(s).\nWould you like to retry them now?`;
+            
+            if (confirm(retryMessage)) {
+                // Retry only the cards that were wrong in this session
+                const mistakeCardsList = this.cards.filter(card => this.currentQuizMistakes.has(card.id));
+                
+                if (mistakeCardsList.length > 0) {
+                    // Reset for retry
+                    this.currentQuiz = mistakeCardsList;
+                    this.currentQuestionIndex = 0;
+                    this.correctCount = 0;
+                    this.wrongCount = 0;
+                    this.currentQuizMistakes = new Set(); // Reset mistakes tracker for retry
+                    
+                    // Shuffle the mistakes
+                    this.shuffleArray(this.currentQuiz);
+                    
+                    this.showNotification('Retrying mistakes...', 'info');
+                    this.showQuestion();
+                    return;
+                }
+            }
+        }
         
         this.showNotification(`Quiz completed! Accuracy: ${accuracy}%`, 'success');
         this.closeQuiz();
