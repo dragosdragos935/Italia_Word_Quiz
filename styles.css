@@ -4020,3 +4020,112 @@ body {
         width: 100%;
     }
 }
+
+/* ===== LEARNED BUTTON ===== */
+.card-footer {
+    padding-top: 1rem;
+    border-top: 2px solid var(--gray-100);
+    margin-top: 1rem;
+}
+
+.btn-learned {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid var(--gray-300);
+    border-radius: var(--radius-lg);
+    background: var(--white);
+    color: var(--gray-600);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btn-learned:hover {
+    background: var(--gray-50);
+    border-color: var(--primary);
+    color: var(--primary);
+    transform: translateY(-2px);
+}
+
+.btn-learned.learned {
+    background: var(--gradient-success);
+    color: var(--white);
+    border-color: var(--success);
+}
+
+.btn-learned.learned:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-learned i {
+    font-size: 1.125rem;
+}
+
+/* ===== LEARNED/UNLEARNED FILTER BUTTONS ===== */
+.btn-difficulty.learned {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: var(--white);
+    border-color: var(--success);
+}
+
+.btn-difficulty.learned:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.btn-difficulty.unlearned {
+    background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+    color: var(--white);
+    border-color: var(--gray-500);
+}
+
+.btn-difficulty.unlearned:hover {
+    background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+}
+
+/* ===== DATE FILTER BUTTONS ===== */
+.btn-difficulty.newest {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: var(--white);
+    border-color: var(--info);
+}
+
+.btn-difficulty.newest:hover {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.btn-difficulty.oldest {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    color: var(--white);
+    border-color: var(--secondary);
+}
+
+.btn-difficulty.oldest:hover {
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+}
+
+.btn-difficulty.recent {
+    background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+    color: var(--white);
+    border-color: #06b6d4;
+}
+
+.btn-difficulty.recent:hover {
+    background: linear-gradient(135deg, #0891b2 0%, #0e7490 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3);
+}

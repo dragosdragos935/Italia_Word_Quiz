@@ -383,6 +383,26 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
             this.selectCardsByDifficulty('easy');
         });
 
+        document.getElementById('selectLearnedCards')?.addEventListener('click', () => {
+            this.selectCardsByLearnedStatus(true);
+        });
+
+        document.getElementById('selectUnlearnedCards')?.addEventListener('click', () => {
+            this.selectCardsByLearnedStatus(false);
+        });
+
+        document.getElementById('selectNewestCards')?.addEventListener('click', () => {
+            this.selectCardsByDate('newest');
+        });
+
+        document.getElementById('selectOldestCards')?.addEventListener('click', () => {
+            this.selectCardsByDate('oldest');
+        });
+
+        document.getElementById('selectRecentCards')?.addEventListener('click', () => {
+            this.selectCardsByDate('recent');
+        });
+
         document.getElementById('closeQuiz')?.addEventListener('click', () => {
             this.closeQuiz();
         });
@@ -1015,6 +1035,7 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
             attempts: 0,
             correct: 0,
             manualDifficulty: 'easy', // Default difficulty
+            learned: false, // New: learned status
             createdAt: new Date().toISOString()
         };
 
@@ -1052,56 +1073,8 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
             container.innerHTML = '';
         }
         
-        const accuracy = card.attempts > 0 ? Math.round((card.correct / card.attempts) * 100) : 0;
-        const difficultyClass = accuracy > 80 ? 'easy' : accuracy > 50 ? 'medium' : 'hard';
-        
-        const italianText = card.targetLanguage === 'it' ? card.targetText : 
-                           card.sourceLanguage === 'it' ? card.sourceText : '';
-        
-        const cardHTML = `
-            <div class="card slide-in-up" draggable="true" data-card-id="${card.id}" ondragstart="app.handleDragStart(event)" ondragover="app.handleDragOver(event)" ondrop="app.handleDrop(event)" ondragend="app.handleDragEnd(event)">
-                <div class="card-header">
-                    <div class="card-drag-handle" title="Drag to reorder">
-                        <i class="fas fa-grip-vertical"></i>
-                    </div>
-                    <div class="card-category">${this.getCategoryLabel(card.category)}</div>
-                    <div class="card-actions">
-                        ${italianText ? `
-                            <button class="card-action pronunciation" onclick="app.pronounceCard('${italianText.replace(/'/g, "\\'")}', 'it')" title="Pronunție Italiană">
-                                <i class="fas fa-volume-up"></i>
-                            </button>
-                        ` : ''}
-                        <button class="card-action" onclick="app.editCard(${card.id})" title="Edit">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="card-action delete" onclick="app.deleteCard(${card.id})" title="Delete">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="card-content">
-                    <div class="card-direction">${this.getLanguageName(card.sourceLanguage)} → ${this.getLanguageName(card.targetLanguage)}</div>
-                    <div class="card-text" data-lang="${this.getLanguageFlag(card.sourceLanguage)}">${card.sourceText}</div>
-                    <div class="card-translation" data-lang="${this.getLanguageFlag(card.targetLanguage)}">${card.targetText}</div>
-                </div>
-                <div class="card-stats">
-                    <span><i class="fas fa-redo"></i> ${card.attempts}</span>
-                    <span><i class="fas fa-check"></i> ${card.correct}</span>
-                    <span class="accuracy ${difficultyClass}"><i class="fas fa-chart-line"></i> ${accuracy}%</span>
-                    <div class="difficulty-selector">
-                        <select class="difficulty-dropdown" onchange="app.setCardDifficulty(${card.id}, this.value)">
-                            <option value="easy" ${(card.manualDifficulty || 'easy') === 'easy' ? 'selected' : ''}>😊 Easy</option>
-                            <option value="medium" ${card.manualDifficulty === 'medium' ? 'selected' : ''}>😐 Medium</option>
-                            <option value="hard" ${card.manualDifficulty === 'hard' ? 'selected' : ''}>😰 Hard</option>
-                            <option value="new" ${card.manualDifficulty === 'new' ? 'selected' : ''}>🆕 New</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-        `;
-        
         // Adaugă la început (cel mai recent)
-        container.insertAdjacentHTML('afterbegin', cardHTML);
+        container.insertAdjacentHTML('afterbegin', this.generateCardHTML(card));
     }
 
 	addDictionaryFromCard(card) {
@@ -1214,6 +1187,60 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
     }
     
 
+    generateCardHTML(card) {
+        const accuracy = card.attempts > 0 ? Math.round((card.correct / card.attempts) * 100) : 0;
+        const difficultyClass = accuracy > 80 ? 'easy' : accuracy > 50 ? 'medium' : 'hard';
+        const italianText = card.targetLanguage === 'it' ? card.targetText : 
+                           card.sourceLanguage === 'it' ? card.sourceText : '';
+        
+        return `
+            <div class="card slide-in-up" draggable="true" data-card-id="${card.id}" ondragstart="app.handleDragStart(event)" ondragover="app.handleDragOver(event)" ondrop="app.handleDrop(event)" ondragend="app.handleDragEnd(event)">
+                <div class="card-header">
+                    <div class="card-drag-handle" title="Drag to reorder">
+                        <i class="fas fa-grip-vertical"></i>
+                    </div>
+                    <div class="card-category">${this.getCategoryLabel(card.category)}</div>
+                    <div class="card-actions">
+                        ${italianText ? `
+                            <button class="card-action pronunciation" onclick="app.pronounceCard('${italianText.replace(/'/g, "\\'")}', 'it')" title="Pronunție Italiană">
+                                <i class="fas fa-volume-up"></i>
+                            </button>
+                        ` : ''}
+                        <button class="card-action" onclick="app.editCard(${card.id})" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="card-action delete" onclick="app.deleteCard(${card.id})" title="Delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-content">
+                    <div class="card-direction">${this.getLanguageName(card.sourceLanguage)} → ${this.getLanguageName(card.targetLanguage)}</div>
+                    <div class="card-text" data-lang="${this.getLanguageFlag(card.sourceLanguage)}">${card.sourceText}</div>
+                    <div class="card-translation" data-lang="${this.getLanguageFlag(card.targetLanguage)}">${card.targetText}</div>
+                </div>
+                <div class="card-stats">
+                    <span><i class="fas fa-redo"></i> ${card.attempts}</span>
+                    <span><i class="fas fa-check"></i> ${card.correct}</span>
+                    <span class="accuracy ${difficultyClass}"><i class="fas fa-chart-line"></i> ${accuracy}%</span>
+                    <div class="difficulty-selector">
+                        <select class="difficulty-dropdown" onchange="app.setCardDifficulty(${card.id}, this.value)">
+                            <option value="easy" ${(card.manualDifficulty || 'easy') === 'easy' ? 'selected' : ''}>😊 Easy</option>
+                            <option value="medium" ${card.manualDifficulty === 'medium' ? 'selected' : ''}>😐 Medium</option>
+                            <option value="hard" ${card.manualDifficulty === 'hard' ? 'selected' : ''}>😰 Hard</option>
+                            <option value="new" ${card.manualDifficulty === 'new' ? 'selected' : ''}>🆕 New</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button class="btn-learned ${card.learned ? 'learned' : ''}" onclick="app.toggleLearned(${card.id})">
+                        ${card.learned ? '<i class="fas fa-check-circle"></i> Învățat' : '<i class="far fa-circle"></i> Neînvățat'}
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
     renderCards() {
         const container = document.getElementById('cardsGrid');
         
@@ -1324,56 +1351,7 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
         const cardsPerPage = 50;
         const displayList = list.slice(0, cardsPerPage);
         
-        container.innerHTML = displayList.map(card => {
-            const accuracy = card.attempts > 0 ? Math.round((card.correct / card.attempts) * 100) : 0;
-            const difficultyClass = accuracy > 80 ? 'easy' : accuracy > 50 ? 'medium' : 'hard';
-            
-            // Determine which text to pronounce (Italian text)
-            const italianText = card.targetLanguage === 'it' ? card.targetText : 
-                               card.sourceLanguage === 'it' ? card.sourceText : '';
-            
-            return `
-                <div class="card slide-in-up" draggable="true" data-card-id="${card.id}" ondragstart="app.handleDragStart(event)" ondragover="app.handleDragOver(event)" ondrop="app.handleDrop(event)" ondragend="app.handleDragEnd(event)">
-                    <div class="card-header">
-                        <div class="card-drag-handle" title="Drag to reorder">
-                            <i class="fas fa-grip-vertical"></i>
-                        </div>
-                        <div class="card-category">${this.getCategoryLabel(card.category)}</div>
-                        <div class="card-actions">
-                            ${italianText ? `
-                                <button class="card-action pronunciation" onclick="app.pronounceCard('${italianText.replace(/'/g, "\\'")}', 'it')" title="Pronunție Italiană">
-                                    <i class="fas fa-volume-up"></i>
-                                </button>
-                            ` : ''}
-                            <button class="card-action" onclick="app.editCard(${card.id})" title="Edit">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="card-action delete" onclick="app.deleteCard(${card.id})" title="Delete">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="card-content">
-                        <div class="card-direction">${this.getLanguageName(card.sourceLanguage)} → ${this.getLanguageName(card.targetLanguage)}</div>
-                        <div class="card-text" data-lang="${this.getLanguageFlag(card.sourceLanguage)}">${card.sourceText}</div>
-                        <div class="card-translation" data-lang="${this.getLanguageFlag(card.targetLanguage)}">${card.targetText}</div>
-                    </div>
-                    <div class="card-stats">
-                        <span><i class="fas fa-redo"></i> ${card.attempts}</span>
-                        <span><i class="fas fa-check"></i> ${card.correct}</span>
-                        <span class="accuracy ${difficultyClass}"><i class="fas fa-chart-line"></i> ${accuracy}%</span>
-                        <div class="difficulty-selector">
-                            <select class="difficulty-dropdown" onchange="app.setCardDifficulty(${card.id}, this.value)">
-                                <option value="easy" ${(card.manualDifficulty || 'easy') === 'easy' ? 'selected' : ''}>😊 Easy</option>
-                                <option value="medium" ${card.manualDifficulty === 'medium' ? 'selected' : ''}>😐 Medium</option>
-                                <option value="hard" ${card.manualDifficulty === 'hard' ? 'selected' : ''}>😰 Hard</option>
-                                <option value="new" ${card.manualDifficulty === 'new' ? 'selected' : ''}>🆕 New</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }).join('');
+        container.innerHTML = displayList.map(card => this.generateCardHTML(card)).join('');
         
         // Adaugă buton "Load More" sau "Show All" dacă sunt mai multe carduri
         if (list.length > cardsPerPage) {
@@ -1409,53 +1387,7 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
         const nextBatch = this.remainingCards.slice(0, cardsPerPage);
         
         nextBatch.forEach(card => {
-            const accuracy = card.attempts > 0 ? Math.round((card.correct / card.attempts) * 100) : 0;
-            const difficultyClass = accuracy > 80 ? 'easy' : accuracy > 50 ? 'medium' : 'hard';
-            const italianText = card.targetLanguage === 'it' ? card.targetText : 
-                               card.sourceLanguage === 'it' ? card.sourceText : '';
-            
-            const cardHTML = `
-                <div class="card slide-in-up" draggable="true" data-card-id="${card.id}" ondragstart="app.handleDragStart(event)" ondragover="app.handleDragOver(event)" ondrop="app.handleDrop(event)" ondragend="app.handleDragEnd(event)">
-                    <div class="card-header">
-                        <div class="card-drag-handle" title="Drag to reorder">
-                            <i class="fas fa-grip-vertical"></i>
-                        </div>
-                        <div class="card-category">${this.getCategoryLabel(card.category)}</div>
-                        <div class="card-actions">
-                            ${italianText ? `
-                                <button class="card-action pronunciation" onclick="app.pronounceCard('${italianText.replace(/'/g, "\\'")}', 'it')" title="Pronunție Italiană">
-                                    <i class="fas fa-volume-up"></i>
-                                </button>
-                            ` : ''}
-                            <button class="card-action" onclick="app.editCard(${card.id})" title="Edit">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="card-action delete" onclick="app.deleteCard(${card.id})" title="Delete">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="card-content">
-                        <div class="card-direction">${this.getLanguageName(card.sourceLanguage)} → ${this.getLanguageName(card.targetLanguage)}</div>
-                        <div class="card-text" data-lang="${this.getLanguageFlag(card.sourceLanguage)}">${card.sourceText}</div>
-                        <div class="card-translation" data-lang="${this.getLanguageFlag(card.targetLanguage)}">${card.targetText}</div>
-                    </div>
-                    <div class="card-stats">
-                        <span><i class="fas fa-redo"></i> ${card.attempts}</span>
-                        <span><i class="fas fa-check"></i> ${card.correct}</span>
-                        <span class="accuracy ${difficultyClass}"><i class="fas fa-chart-line"></i> ${accuracy}%</span>
-                        <div class="difficulty-selector">
-                            <select class="difficulty-dropdown" onchange="app.setCardDifficulty(${card.id}, this.value)">
-                                <option value="easy" ${(card.manualDifficulty || 'easy') === 'easy' ? 'selected' : ''}>😊 Easy</option>
-                                <option value="medium" ${card.manualDifficulty === 'medium' ? 'selected' : ''}>😐 Medium</option>
-                                <option value="hard" ${card.manualDifficulty === 'hard' ? 'selected' : ''}>😰 Hard</option>
-                                <option value="new" ${card.manualDifficulty === 'new' ? 'selected' : ''}>🆕 New</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            `;
-            container.insertAdjacentHTML('beforeend', cardHTML);
+            container.insertAdjacentHTML('beforeend', this.generateCardHTML(card));
         });
         
         this.remainingCards = this.remainingCards.slice(cardsPerPage);
@@ -1489,53 +1421,7 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
         const allRemaining = this.remainingCards;
         
         allRemaining.forEach(card => {
-            const accuracy = card.attempts > 0 ? Math.round((card.correct / card.attempts) * 100) : 0;
-            const difficultyClass = accuracy > 80 ? 'easy' : accuracy > 50 ? 'medium' : 'hard';
-            const italianText = card.targetLanguage === 'it' ? card.targetText : 
-                               card.sourceLanguage === 'it' ? card.sourceText : '';
-            
-            const cardHTML = `
-                <div class="card slide-in-up" draggable="true" data-card-id="${card.id}" ondragstart="app.handleDragStart(event)" ondragover="app.handleDragOver(event)" ondrop="app.handleDrop(event)" ondragend="app.handleDragEnd(event)">
-                    <div class="card-header">
-                        <div class="card-drag-handle" title="Drag to reorder">
-                            <i class="fas fa-grip-vertical"></i>
-                        </div>
-                        <div class="card-category">${this.getCategoryLabel(card.category)}</div>
-                        <div class="card-actions">
-                            ${italianText ? `
-                                <button class="card-action pronunciation" onclick="app.pronounceCard('${italianText.replace(/'/g, "\\'")}', 'it')" title="Pronunție Italiană">
-                                    <i class="fas fa-volume-up"></i>
-                                </button>
-                            ` : ''}
-                            <button class="card-action" onclick="app.editCard(${card.id})" title="Edit">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="card-action delete" onclick="app.deleteCard(${card.id})" title="Delete">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="card-content">
-                        <div class="card-direction">${this.getLanguageName(card.sourceLanguage)} → ${this.getLanguageName(card.targetLanguage)}</div>
-                        <div class="card-text" data-lang="${this.getLanguageFlag(card.sourceLanguage)}">${card.sourceText}</div>
-                        <div class="card-translation" data-lang="${this.getLanguageFlag(card.targetLanguage)}">${card.targetText}</div>
-                    </div>
-                    <div class="card-stats">
-                        <span><i class="fas fa-redo"></i> ${card.attempts}</span>
-                        <span><i class="fas fa-check"></i> ${card.correct}</span>
-                        <span class="accuracy ${difficultyClass}"><i class="fas fa-chart-line"></i> ${accuracy}%</span>
-                        <div class="difficulty-selector">
-                            <select class="difficulty-dropdown" onchange="app.setCardDifficulty(${card.id}, this.value)">
-                                <option value="easy" ${(card.manualDifficulty || 'easy') === 'easy' ? 'selected' : ''}>😊 Easy</option>
-                                <option value="medium" ${card.manualDifficulty === 'medium' ? 'selected' : ''}>😐 Medium</option>
-                                <option value="hard" ${card.manualDifficulty === 'hard' ? 'selected' : ''}>😰 Hard</option>
-                                <option value="new" ${card.manualDifficulty === 'new' ? 'selected' : ''}>🆕 New</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-            `;
-            container.insertAdjacentHTML('beforeend', cardHTML);
+            container.insertAdjacentHTML('beforeend', this.generateCardHTML(card));
         });
         
         this.remainingCards = [];
@@ -1714,6 +1600,65 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
         this.showNotification(`Selected ${count} ${difficultyNames[difficulty]} cards!`, 'success');
     }
 
+    selectCardsByLearnedStatus(learned) {
+        this.selectedCardIds = new Set();
+        
+        this.cards.forEach(card => {
+            if (card.learned === learned) {
+                this.selectedCardIds.add(card.id);
+            }
+        });
+        
+        this.renderCardSelection();
+        
+        const count = this.selectedCardIds.size;
+        const statusName = learned ? 'învățate' : 'neînvățate';
+        this.showNotification(`Selected ${count} ${statusName} cards!`, 'success');
+    }
+
+    selectCardsByDate(dateFilter) {
+        this.selectedCardIds = new Set();
+        
+        const now = new Date();
+        const oneDayMs = 24 * 60 * 60 * 1000;
+        const sevenDaysAgo = new Date(now.getTime() - 7 * oneDayMs);
+        const thirtyDaysAgo = new Date(now.getTime() - 30 * oneDayMs);
+        
+        this.cards.forEach(card => {
+            const cardDate = new Date(card.createdAt);
+            let shouldSelect = false;
+            
+            switch(dateFilter) {
+                case 'newest':
+                    // Last 7 days
+                    shouldSelect = cardDate >= sevenDaysAgo;
+                    break;
+                case 'oldest':
+                    // Older than 30 days
+                    shouldSelect = cardDate < thirtyDaysAgo;
+                    break;
+                case 'recent':
+                    // Last 30 days
+                    shouldSelect = cardDate >= thirtyDaysAgo;
+                    break;
+            }
+            
+            if (shouldSelect) {
+                this.selectedCardIds.add(card.id);
+            }
+        });
+        
+        this.renderCardSelection();
+        
+        const count = this.selectedCardIds.size;
+        const dateNames = {
+            'newest': 'cele mai noi (ultimele 7 zile)',
+            'oldest': 'cele mai vechi (peste 30 zile)',
+            'recent': 'recente (ultimele 30 zile)'
+        };
+        this.showNotification(`Selected ${count} ${dateNames[dateFilter]} cards!`, 'success');
+    }
+
     setCardDifficulty(cardId, difficulty) {
         const card = this.cards.find(c => c.id === cardId);
         if (!card) return;
@@ -1729,6 +1674,32 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
         };
         
         this.showNotification(`Card difficulty set to ${difficultyNames[difficulty]}`, 'success');
+    }
+
+    toggleLearned(cardId) {
+        const card = this.cards.find(c => c.id === cardId);
+        if (!card) return;
+        
+        card.learned = !card.learned;
+        this.saveCards();
+        this.updateStats();
+        
+        // Update the button in the DOM
+        const cardElement = document.querySelector(`[data-card-id="${cardId}"]`);
+        if (cardElement) {
+            const learnedBtn = cardElement.querySelector('.btn-learned');
+            if (learnedBtn) {
+                if (card.learned) {
+                    learnedBtn.innerHTML = '<i class="fas fa-check-circle"></i> Învățat';
+                    learnedBtn.classList.add('learned');
+                } else {
+                    learnedBtn.innerHTML = '<i class="far fa-circle"></i> Neînvățat';
+                    learnedBtn.classList.remove('learned');
+                }
+            }
+        }
+        
+        this.showNotification(card.learned ? '✅ Marcat ca învățat!' : '⭕ Marcat ca neînvățat!', 'success');
     }
 
     updateSelectedCount() {
