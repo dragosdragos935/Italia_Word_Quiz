@@ -14,7 +14,7 @@ class LanguageLearningApp {
         this.wrongCount = 0;
         this.hintUsed = false;
 		this.cardsSearchQuery = '';
-		this.cardsFilters = { query: '', sort: 'recent', sourceLang: 'any', targetLang: 'any', letter: 'all', category: 'any', difficulty: 'any' };
+		this.cardsFilters = { query: '', sort: 'recent', sourceLang: 'any', targetLang: 'any', letter: 'all', category: 'any', difficulty: 'any', learnedStatus: 'any' };
 		this.dictionaryFilters = { query: '', sort: 'recent', sourceLang: 'any', targetLang: 'any', letter: 'all' };
 		this.currentDictTab = 'online';
 		this.translationDirection = { from: 'ro', to: 'it' };
@@ -853,7 +853,8 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
 		const cardsLetter = document.getElementById('cardsLetter');
 		const cardsCategoryFilter = document.getElementById('cardsCategoryFilter');
 		const cardsDifficulty = document.getElementById('cardsDifficulty');
-		[cardsSort, cardsSourceFilter, cardsTargetFilter, cardsLetter, cardsCategoryFilter, cardsDifficulty].forEach(el => {
+		const cardsLearnedStatus = document.getElementById('cardsLearnedStatus');
+		[cardsSort, cardsSourceFilter, cardsTargetFilter, cardsLetter, cardsCategoryFilter, cardsDifficulty, cardsLearnedStatus].forEach(el => {
 			if (!el) return;
 			el.addEventListener('input', () => {
 				this.cardsFilters.sort = cardsSort ? cardsSort.value : 'recent';
@@ -862,6 +863,7 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
 				this.cardsFilters.letter = cardsLetter ? cardsLetter.value : 'all';
 				this.cardsFilters.category = cardsCategoryFilter ? cardsCategoryFilter.value : 'any';
 				this.cardsFilters.difficulty = cardsDifficulty ? cardsDifficulty.value : 'any';
+				this.cardsFilters.learnedStatus = cardsLearnedStatus ? cardsLearnedStatus.value : 'any';
 				this.updateActiveFiltersCount();
 				this.renderCards();
 			});
@@ -922,6 +924,7 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
 		if (filters.targetLang !== 'any') count++;
 		if (filters.letter !== 'all') count++;
 		if (filters.difficulty !== 'any') count++;
+		if (filters.learnedStatus !== 'any') count++;
 		if (filters.sort !== 'recent') count++;
 		
 		const countEl = document.getElementById('activeFiltersCount');
@@ -943,7 +946,8 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
 			targetLang: 'any',
 			letter: 'all',
 			category: 'any',
-			difficulty: 'any'
+			difficulty: 'any',
+			learnedStatus: 'any'
 		};
 		
 		this.cardsSearchQuery = '';
@@ -968,6 +972,9 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
 		
 		const difficultyFilter = document.getElementById('cardsDifficulty');
 		if (difficultyFilter) difficultyFilter.value = 'any';
+		
+		const learnedStatusFilter = document.getElementById('cardsLearnedStatus');
+		if (learnedStatusFilter) learnedStatusFilter.value = 'any';
 		
 		const clearBtn = document.getElementById('clearCardsSearch');
 		if (clearBtn) clearBtn.style.display = 'none';
@@ -1305,28 +1312,59 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
             });
         }
         
+        // Learned status filter
+        if (filters.learnedStatus !== 'any') {
+            list = list.filter(card => {
+                if (filters.learnedStatus === 'learned') return card.learned === true;
+                if (filters.learnedStatus === 'unlearned') return card.learned !== true;
+                return true;
+            });
+        }
+        
         // Sorting
         if (filters.sort==='recent') {
+            // Newest first (descending by date)
             list.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+        } else if (filters.sort==='oldest') {
+            // Oldest first (ascending by date)
+            list.sort((a,b)=>new Date(a.createdAt)-new Date(b.createdAt));
         } else if (filters.sort==='az') {
+            // A to Z (ascending alphabetically)
             list.sort((a,b)=>(a.sourceText||'').localeCompare(b.sourceText||''));
         } else if (filters.sort==='za') {
+            // Z to A (descending alphabetically)
             list.sort((a,b)=>(b.sourceText||'').localeCompare(a.sourceText||''));
         } else if (filters.sort==='mostPracticed') {
+            // Most practiced first (descending by attempts)
             list.sort((a,b)=>b.attempts - a.attempts);
         } else if (filters.sort==='leastPracticed') {
+            // Least practiced first (ascending by attempts)
             list.sort((a,b)=>a.attempts - b.attempts);
         } else if (filters.sort==='hardest') {
+            // Hardest first (ascending by accuracy)
             list.sort((a,b)=>{
                 const accA = a.attempts > 0 ? (a.correct / a.attempts) : 1;
                 const accB = b.attempts > 0 ? (b.correct / b.attempts) : 1;
                 return accA - accB;
             });
         } else if (filters.sort==='easiest') {
+            // Easiest first (descending by accuracy)
             list.sort((a,b)=>{
                 const accA = a.attempts > 0 ? (a.correct / a.attempts) : 0;
                 const accB = b.attempts > 0 ? (b.correct / b.attempts) : 0;
                 return accB - accA;
+            });
+        } else if (filters.sort==='learnedFirst') {
+            // Learned cards first
+            list.sort((a,b)=>{
+                if (a.learned === b.learned) return 0;
+                return a.learned ? -1 : 1;
+            });
+        } else if (filters.sort==='unlearnedFirst') {
+            // Unlearned cards first
+            list.sort((a,b)=>{
+                if (a.learned === b.learned) return 0;
+                return a.learned ? 1 : -1;
             });
         }
         
@@ -1452,6 +1490,21 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
         } else {
             filtered = this.cards;
         }
+        
+        // Apply learned/unlearned filter based on quiz mode
+        if (selectedMode === 'learnedOnly') {
+            filtered = filtered.filter(card => card.learned === true);
+            if (filtered.length === 0) {
+                this.showNotification('No learned cards available! Please mark some cards as learned first.', 'error');
+                return;
+            }
+        } else if (selectedMode === 'unlearnedOnly') {
+            filtered = filtered.filter(card => card.learned !== true);
+            if (filtered.length === 0) {
+                this.showNotification('No unlearned cards available! All cards are marked as learned.', 'error');
+                return;
+            }
+        }
 
         if (filtered.length === 0) {
             this.showNotification('Please select at least one card for the quiz!', 'error');
@@ -1460,7 +1513,29 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
 
         // Initialize quiz state
         this.currentQuiz = [...filtered];
-        this.shuffleArray(this.currentQuiz);
+        
+        // Apply ordering based on quiz mode
+        if (selectedMode === 'ascending') {
+            // Sort from easiest to hardest (ascending by difficulty)
+            this.currentQuiz.sort((a, b) => {
+                const accA = a.attempts > 0 ? (a.correct / a.attempts) : 0;
+                const accB = b.attempts > 0 ? (b.correct / b.attempts) : 0;
+                // Higher accuracy = easier, so reverse for ascending difficulty
+                return accB - accA;
+            });
+        } else if (selectedMode === 'descending') {
+            // Sort from hardest to easiest (descending by difficulty)
+            this.currentQuiz.sort((a, b) => {
+                const accA = a.attempts > 0 ? (a.correct / a.attempts) : 0;
+                const accB = b.attempts > 0 ? (b.correct / b.attempts) : 0;
+                // Lower accuracy = harder, so normal sort
+                return accA - accB;
+            });
+        } else {
+            // Shuffle for all other modes
+            this.shuffleArray(this.currentQuiz);
+        }
+        
         this.currentQuestionIndex = 0;
         this.isAnswered = false;
         this.correctCount = 0;
@@ -1841,7 +1916,17 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
         const modeLabels = {
             'typing': 'Typing Mode',
             'multiple': 'Multiple Choice',
-            'sentence': 'Sentence Mode'
+            'sentence': 'Sentence Mode',
+            'flashcard': 'Flashcard Mode',
+            'listening': 'Listening Mode',
+            'matching': 'Matching Mode',
+            'speed': 'Speed Round',
+            'pronunciation': 'Pronunciation Mode',
+            'mixed': 'Mixed Mode',
+            'ascending': 'Ascending Order (Easy → Hard)',
+            'descending': 'Descending Order (Hard → Easy)',
+            'learnedOnly': '✅ Learned Cards Only',
+            'unlearnedOnly': '⭕ Unlearned Cards Only'
         };
         document.getElementById('questionType').textContent = modeLabels[this.quizMode] || 'Typing Mode';
     
@@ -1935,6 +2020,17 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
                 const randomMode = modes[Math.floor(Math.random() * modes.length)];
                 this.quizMode = randomMode;
                 this.setQuizMode(randomMode);
+                break;
+            case 'ascending':
+            case 'descending':
+            case 'learnedOnly':
+            case 'unlearnedOnly':
+                // These are filtering modes, use typing as default interaction
+                document.getElementById('typingMode').style.display = 'block';
+                break;
+            default:
+                // Default to typing mode for any unhandled mode
+                document.getElementById('typingMode').style.display = 'block';
                 break;
         }
     }

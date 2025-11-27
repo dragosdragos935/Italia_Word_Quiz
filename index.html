@@ -216,13 +216,16 @@
                             <div class="filter-group">
                                 <label><i class="fas fa-sort-alpha-down"></i> Sort By</label>
                                 <select id="cardsSort" class="filter-select">
-                                    <option value="recent">📅 Most Recent</option>
-                                    <option value="az">🔤 A → Z</option>
-                                    <option value="za">🔤 Z → A</option>
-                                    <option value="mostPracticed">🔥 Most Practiced</option>
-                                    <option value="leastPracticed">❄️ Least Practiced</option>
-                                    <option value="hardest">😰 Hardest</option>
-                                    <option value="easiest">😊 Easiest</option>
+                                    <option value="recent">📅 Newest First (Most Recent)</option>
+                                    <option value="oldest">📅 Oldest First</option>
+                                    <option value="az">🔤 A → Z (Ascending)</option>
+                                    <option value="za">🔤 Z → A (Descending)</option>
+                                    <option value="mostPracticed">🔥 Most Practiced (Descending)</option>
+                                    <option value="leastPracticed">❄️ Least Practiced (Ascending)</option>
+                                    <option value="hardest">� Hardeest First (Ascending Accuracy)</option>
+                                    <option value="easiest">😊 Easiest First (Descending Accuracy)</option>
+                                    <option value="learnedFirst">✅ Learned First</option>
+                                    <option value="unlearnedFirst">⭕ Unlearned First</option>
                                 </select>
                             </div>
 
@@ -249,6 +252,15 @@
                                     <option value="new">🆕 New (Not Practiced)</option>
                                     <option value="learning">📚 Learning (< 50%)</option>
                                     <option value="mastered">✅ Mastered (> 80%)</option>
+                                </select>
+                            </div>
+
+                            <div class="filter-group">
+                                <label><i class="fas fa-graduation-cap"></i> Learning Status</label>
+                                <select id="cardsLearnedStatus" class="filter-select">
+                                    <option value="any">All Cards</option>
+                                    <option value="learned">✅ Learned Only</option>
+                                    <option value="unlearned">⭕ Unlearned Only</option>
                                 </select>
                             </div>
                         </div>
@@ -432,6 +444,50 @@
                                     </div>
                                     <div class="mode-title">Mixed Mode</div>
                                     <div class="mode-description">All modes combined</div>
+                                </div>
+                            </label>
+                            
+                            <label class="quiz-mode-card">
+                                <input type="radio" name="quizMode" value="ascending">
+                                <div class="mode-card-content">
+                                    <div class="mode-icon">
+                                        <i class="fas fa-sort-amount-up"></i>
+                                    </div>
+                                    <div class="mode-title">Ascending Order</div>
+                                    <div class="mode-description">Easy to hard progression</div>
+                                </div>
+                            </label>
+                            
+                            <label class="quiz-mode-card">
+                                <input type="radio" name="quizMode" value="descending">
+                                <div class="mode-card-content">
+                                    <div class="mode-icon">
+                                        <i class="fas fa-sort-amount-down"></i>
+                                    </div>
+                                    <div class="mode-title">Descending Order</div>
+                                    <div class="mode-description">Hard to easy progression</div>
+                                </div>
+                            </label>
+                            
+                            <label class="quiz-mode-card">
+                                <input type="radio" name="quizMode" value="learnedOnly">
+                                <div class="mode-card-content">
+                                    <div class="mode-icon">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div class="mode-title">Learned Cards</div>
+                                    <div class="mode-description">Practice learned cards only</div>
+                                </div>
+                            </label>
+                            
+                            <label class="quiz-mode-card">
+                                <input type="radio" name="quizMode" value="unlearnedOnly">
+                                <div class="mode-card-content">
+                                    <div class="mode-icon">
+                                        <i class="far fa-circle"></i>
+                                    </div>
+                                    <div class="mode-title">Unlearned Cards</div>
+                                    <div class="mode-description">Practice unlearned cards only</div>
                                 </div>
                             </label>
                         </div>
