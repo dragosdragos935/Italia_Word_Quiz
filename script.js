@@ -220,7 +220,8 @@ importDictionary(file) {
             studiedToday: 0,
             exercisesToday: 0,
             streak: 0,
-            totalStudied: 0
+            totalStudied: 0,
+            firstTryCorrect: 0
         };
         
         if (!saved) return defaultProgress;
@@ -232,10 +233,12 @@ importDictionary(file) {
         if (progress.lastStudyDate !== today) {
             progress.studiedToday = 0;
             progress.exercisesToday = 0;
+            progress.firstTryCorrect = 0;
         }
         
         // Ensure all fields exist
         if (!progress.exercisesToday) progress.exercisesToday = 0;
+        if (!progress.firstTryCorrect) progress.firstTryCorrect = 0;
         
         return progress;
     }
@@ -2213,11 +2216,15 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
             this.isAnswered = true;
             this.handleAnswer(true);
             
-            // If answered correctly on first try, remove from mistakes
+            // If answered correctly on first try, remove from mistakes AND increment first try counter
             if (!this.currentQuizMistakes.has(this.currentQuestion.card.id)) {
                 this.mistakeCards.delete(this.currentQuestion.card.id);
                 this.saveMistakeCards();
                 this.updateMistakeCount();
+                
+                // Increment first try correct counter
+                this.dailyProgress.firstTryCorrect++;
+                this.saveDailyProgress();
             }
             
             // Update hint area with success message
@@ -2290,11 +2297,15 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
             this.isAnswered = true;
             this.handleAnswer(true);
             
-            // If answered correctly on first try, remove from mistakes
+            // If answered correctly on first try, remove from mistakes AND increment first try counter
             if (!this.currentQuizMistakes.has(this.currentQuestion.card.id)) {
                 this.mistakeCards.delete(this.currentQuestion.card.id);
                 this.saveMistakeCards();
                 this.updateMistakeCount();
+                
+                // Increment first try correct counter
+                this.dailyProgress.firstTryCorrect++;
+                this.saveDailyProgress();
             }
             
             // Update hint area with success message
@@ -2505,6 +2516,21 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
     handleFlashcardAnswer(isCorrect) {
         if (this.isAnswered) return;
         
+        // If answered correctly on first try, increment counter
+        if (isCorrect && !this.currentQuizMistakes.has(this.currentQuestion.card.id)) {
+            this.dailyProgress.firstTryCorrect++;
+            this.saveDailyProgress();
+            this.mistakeCards.delete(this.currentQuestion.card.id);
+            this.saveMistakeCards();
+            this.updateMistakeCount();
+        } else if (!isCorrect) {
+            // Add to mistakes
+            this.mistakeCards.add(this.currentQuestion.card.id);
+            this.currentQuizMistakes.add(this.currentQuestion.card.id);
+            this.saveMistakeCards();
+            this.updateMistakeCount();
+        }
+        
         this.handleAnswer(isCorrect);
         
         setTimeout(() => {
@@ -2576,6 +2602,16 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
         if (isCorrect) {
             this.isAnswered = true;
             this.handleAnswer(true);
+            
+            // If answered correctly on first try, increment counter
+            if (!this.currentQuizMistakes.has(this.currentQuestion.card.id)) {
+                this.dailyProgress.firstTryCorrect++;
+                this.saveDailyProgress();
+                this.mistakeCards.delete(this.currentQuestion.card.id);
+                this.saveMistakeCards();
+                this.updateMistakeCount();
+            }
+            
             this.showFeedback(true, `✅ Corect! Răspunsul este: ${this.currentQuestion.correctAnswer}`);
             
             setTimeout(() => {
@@ -2587,6 +2623,12 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
             this.currentQuestion.card.attempts++;
             this.saveCards();
             this.updateStats();
+            
+            // Add to mistakes
+            this.mistakeCards.add(this.currentQuestion.card.id);
+            this.currentQuizMistakes.add(this.currentQuestion.card.id);
+            this.saveMistakeCards();
+            this.updateMistakeCount();
             
             // Arată feedback fără butoane
             this.showFeedback(false, `❌ Greșit! Ascultă din nou și încearcă.`);
@@ -2764,6 +2806,16 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
             clearInterval(this.speedTimer);
             this.isAnswered = true;
             this.handleAnswer(true);
+            
+            // If answered correctly on first try, increment counter
+            if (!this.currentQuizMistakes.has(this.currentQuestion.card.id)) {
+                this.dailyProgress.firstTryCorrect++;
+                this.saveDailyProgress();
+                this.mistakeCards.delete(this.currentQuestion.card.id);
+                this.saveMistakeCards();
+                this.updateMistakeCount();
+            }
+            
             this.showFeedback(true, `⚡ Corect! Răspuns rapid: ${this.currentQuestion.correctAnswer}`);
             
             setTimeout(() => {
@@ -2775,6 +2827,12 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
             this.currentQuestion.card.attempts++;
             this.saveCards();
             this.updateStats();
+            
+            // Add to mistakes
+            this.mistakeCards.add(this.currentQuestion.card.id);
+            this.currentQuizMistakes.add(this.currentQuestion.card.id);
+            this.saveMistakeCards();
+            this.updateMistakeCount();
             
             // Arată feedback fără butoane
             this.showFeedback(false, `❌ Greșit! Încearcă din nou rapid!`);
@@ -3468,6 +3526,18 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
             const totalCorrect = this.cards.reduce((sum, card) => sum + (card.correct || 0), 0);
             const accuracy = totalAttempts > 0 ? Math.round((totalCorrect / totalAttempts) * 100) : 0;
             accuracyEl.textContent = accuracy + '%';
+        }
+        
+        // First Try Correct
+        const firstTryEl = document.getElementById('firstTryCorrect');
+        if (firstTryEl) {
+            firstTryEl.textContent = this.dailyProgress.firstTryCorrect || 0;
+        }
+        
+        // Mistakes Count
+        const mistakesEl = document.getElementById('mistakesCount');
+        if (mistakesEl) {
+            mistakesEl.textContent = this.mistakeCards ? this.mistakeCards.size : 0;
         }
         
         // Update badges
