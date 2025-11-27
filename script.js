@@ -271,6 +271,12 @@ importDictionary(file) {
         }
     }
 
+    manualAddToMistakes(cardId) {
+        // This function is called when user clicks "Add to Mistakes" button
+        // Card is already added automatically, so just show confirmation
+        this.showNotification('Card already added to Mistakes! ⚠️', 'info');
+    }
+
     // Event Listeners
     setupEventListeners() {
         // Navigation
@@ -2240,11 +2246,17 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
             this.saveMistakeCards();
             this.updateMistakeCount();
             
-            // Update hint area with error message
-            hintElement.textContent = `❌ GREȘIT! Încearcă din nou`;
-            hintElement.style.color = '#ef4444';
-            hintElement.style.fontWeight = '700';
-            hintElement.style.fontSize = '1.25rem';
+            // Update hint area with error message and button
+            hintElement.innerHTML = `
+                <span style="color: #ef4444; font-weight: 700; font-size: 1.25rem;">❌ GREȘIT! Încearcă din nou</span>
+                <button class="btn-add-mistake" onclick="app.manualAddToMistakes(${this.currentQuestion.card.id})" style="margin-left: 1rem;">
+                    <i class="fas fa-exclamation-triangle"></i> Added to Mistakes
+                </button>
+            `;
+            hintElement.style.display = 'flex';
+            hintElement.style.alignItems = 'center';
+            hintElement.style.justifyContent = 'center';
+            hintElement.style.gap = '1rem';
             
             // Don't show bottom feedback section
             // this.showFeedback(false, `❌ Greșit! Încearcă din nou.`);
@@ -2253,12 +2265,14 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
             answerInput.value = '';
             answerInput.focus();
             
-            // Resetează hint-ul după 2 secunde
+            // Resetează hint-ul după 3 secunde
             setTimeout(() => {
-                hintElement.style.color = '';
-                hintElement.style.fontWeight = '';
-                hintElement.style.fontSize = '';
-            }, 2000);
+                hintElement.innerHTML = '';
+                hintElement.style.display = '';
+                hintElement.style.alignItems = '';
+                hintElement.style.justifyContent = '';
+                hintElement.style.gap = '';
+            }, 3000);
         }
     }
 
@@ -2275,6 +2289,13 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
         if (isCorrect) {
             this.isAnswered = true;
             this.handleAnswer(true);
+            
+            // If answered correctly on first try, remove from mistakes
+            if (!this.currentQuizMistakes.has(this.currentQuestion.card.id)) {
+                this.mistakeCards.delete(this.currentQuestion.card.id);
+                this.saveMistakeCards();
+                this.updateMistakeCount();
+            }
             
             // Update hint area with success message
             hintElement.textContent = `✅ CORECT! Răspunsul: ${this.currentQuestion.correctAnswer}`;
@@ -2296,11 +2317,23 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
             this.saveCards();
             this.updateStats();
             
-            // Update hint area with error message
-            hintElement.textContent = `❌ GREȘIT! Încearcă din nou`;
-            hintElement.style.color = '#ef4444';
-            hintElement.style.fontWeight = '700';
-            hintElement.style.fontSize = '1.25rem';
+            // Add to mistakes if not already there
+            this.mistakeCards.add(this.currentQuestion.card.id);
+            this.currentQuizMistakes.add(this.currentQuestion.card.id);
+            this.saveMistakeCards();
+            this.updateMistakeCount();
+            
+            // Update hint area with error message and button
+            hintElement.innerHTML = `
+                <span style="color: #ef4444; font-weight: 700; font-size: 1.25rem;">❌ GREȘIT! Încearcă din nou</span>
+                <button class="btn-add-mistake" onclick="app.manualAddToMistakes(${this.currentQuestion.card.id})" style="margin-left: 1rem;">
+                    <i class="fas fa-exclamation-triangle"></i> Added to Mistakes
+                </button>
+            `;
+            hintElement.style.display = 'flex';
+            hintElement.style.alignItems = 'center';
+            hintElement.style.justifyContent = 'center';
+            hintElement.style.gap = '1rem';
             
             // Don't show bottom feedback section
             // this.showFeedback(false, `❌ Greșit! Încearcă din nou.`);
@@ -2309,12 +2342,14 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
             answerInput.value = '';
             answerInput.focus();
             
-            // Resetează hint-ul după 2 secunde
+            // Resetează hint-ul după 3 secunde
             setTimeout(() => {
-                hintElement.style.color = '';
-                hintElement.style.fontWeight = '';
-                hintElement.style.fontSize = '';
-            }, 2000);
+                hintElement.innerHTML = '';
+                hintElement.style.display = '';
+                hintElement.style.alignItems = '';
+                hintElement.style.justifyContent = '';
+                hintElement.style.gap = '';
+            }, 3000);
         }
     }
     isAnswerCorrect(userAnswer, correctAnswer) {
