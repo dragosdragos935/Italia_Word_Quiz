@@ -2267,20 +2267,27 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
         }
     }
     isAnswerCorrect(userAnswer, correctAnswer) {
-        // Exact match
-                if (userAnswer === correctAnswer) return true;
+        // STRICT EXACT MATCH ONLY - including accents
+        // If the correct answer has accents (è, ì, ò, à, ù), user MUST type them correctly
+        return userAnswer === correctAnswer;
+    }
 
-        // Remove accents and compare
-        const normalize = (str) => str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-        if (normalize(userAnswer) === normalize(correctAnswer)) return true;
+    insertChar(char) {
+        const input = document.getElementById('typingAnswer');
+        if (!input) return;
         
-        // Check if user answer contains the correct answer or vice versa
-        if (userAnswer.includes(correctAnswer) || correctAnswer.includes(userAnswer)) {
-            return Math.abs(userAnswer.length - correctAnswer.length) <= 2;
-        }
+        const start = input.selectionStart;
+        const end = input.selectionEnd;
+        const text = input.value;
         
-        return false;
-
+        // Insert character at cursor position
+        input.value = text.substring(0, start) + char + text.substring(end);
+        
+        // Move cursor after inserted character
+        input.selectionStart = input.selectionEnd = start + 1;
+        
+        // Focus back on input
+        input.focus();
     }
 
     handleAnswer(isCorrect) {
