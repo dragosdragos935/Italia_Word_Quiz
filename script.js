@@ -1249,6 +1249,9 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
                     <button class="btn-learned ${card.learned ? 'learned' : ''}" onclick="app.toggleLearned(${card.id})">
                         ${card.learned ? '<i class="fas fa-check-circle"></i> Învățat' : '<i class="far fa-circle"></i> Neînvățat'}
                     </button>
+                    <button class="btn-select-quiz ${this.selectedCardIds && this.selectedCardIds.has(card.id) ? 'selected' : ''}" onclick="app.toggleCardForQuiz(${card.id})">
+                        <i class="fas fa-check-square"></i> ${this.selectedCardIds && this.selectedCardIds.has(card.id) ? 'Selected for Quiz' : 'Select for Quiz'}
+                    </button>
                 </div>
             </div>
         `;
@@ -1502,6 +1505,17 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
             filtered = filtered.filter(card => card.learned !== true);
             if (filtered.length === 0) {
                 this.showNotification('No unlearned cards available! All cards are marked as learned.', 'error');
+                return;
+            }
+        } else if (selectedMode === 'selectedOnly') {
+            // Use only selected cards
+            if (!this.selectedCardIds || this.selectedCardIds.size === 0) {
+                this.showNotification('No cards selected! Please select cards from the Flashcards tab first.', 'error');
+                return;
+            }
+            filtered = this.cards.filter(card => this.selectedCardIds.has(card.id));
+            if (filtered.length === 0) {
+                this.showNotification('Selected cards not found!', 'error');
                 return;
             }
         }
@@ -1783,6 +1797,42 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
         this.showNotification(card.learned ? '✅ Marcat ca învățat!' : '⭕ Marcat ca neînvățat!', 'success');
     }
 
+    toggleCardForQuiz(cardId) {
+        if (!this.selectedCardIds) {
+            this.selectedCardIds = new Set();
+        }
+        
+        if (this.selectedCardIds.has(cardId)) {
+            this.selectedCardIds.delete(cardId);
+        } else {
+            this.selectedCardIds.add(cardId);
+        }
+        
+        // Update the button in the DOM
+        const cardElement = document.querySelector(`[data-card-id="${cardId}"]`);
+        if (cardElement) {
+            const selectBtn = cardElement.querySelector('.btn-select-quiz');
+            if (selectBtn) {
+                if (this.selectedCardIds.has(cardId)) {
+                    selectBtn.innerHTML = '<i class="fas fa-check-square"></i> Selected for Quiz';
+                    selectBtn.classList.add('selected');
+                } else {
+                    selectBtn.innerHTML = '<i class="fas fa-check-square"></i> Select for Quiz';
+                    selectBtn.classList.remove('selected');
+                }
+            }
+        }
+        
+        this.updateSelectedCount();
+        
+        const count = this.selectedCardIds.size;
+        if (count > 0) {
+            this.showNotification(`${count} card(s) selected for quiz`, 'success');
+        } else {
+            this.showNotification('No cards selected', 'info');
+        }
+    }
+
     updateSelectedCount() {
         const count = this.selectedCardIds ? this.selectedCardIds.size : 0;
         const el = document.getElementById('quizSelectedCards');
@@ -1926,7 +1976,8 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
             'ascending': 'Ascending Order (Easy → Hard)',
             'descending': 'Descending Order (Hard → Easy)',
             'learnedOnly': '✅ Learned Cards Only',
-            'unlearnedOnly': '⭕ Unlearned Cards Only'
+            'unlearnedOnly': '⭕ Unlearned Cards Only',
+            'selectedOnly': '✔️ Selected Cards Only'
         };
         document.getElementById('questionType').textContent = modeLabels[this.quizMode] || 'Typing Mode';
     
@@ -2025,6 +2076,7 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
             case 'descending':
             case 'learnedOnly':
             case 'unlearnedOnly':
+            case 'selectedOnly':
                 // These are filtering modes, use typing as default interaction
                 document.getElementById('typingMode').style.display = 'block';
                 break;
@@ -2110,11 +2162,21 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
         const userAnswer = answerInput.value.trim().toLowerCase();
         const correctAnswer = this.currentQuestion.correctAnswer.toLowerCase();
         const isCorrect = this.isAnswerCorrect(userAnswer, correctAnswer);
+        
+        const hintElement = document.getElementById('questionHint');
     
         if (isCorrect) {
             this.isAnswered = true;
             this.handleAnswer(true);
-            this.showFeedback(true, `✅ Corect! Răspunsul este: ${this.currentQuestion.correctAnswer}`);
+            
+            // Update hint area with success message
+            hintElement.textContent = `✅ CORECT! Răspunsul: ${this.currentQuestion.correctAnswer}`;
+            hintElement.style.color = '#10b981';
+            hintElement.style.fontWeight = '700';
+            hintElement.style.fontSize = '1.25rem';
+            
+            // Don't show bottom feedback section
+            // this.showFeedback(true, `✅ Corect! Răspunsul este: ${this.currentQuestion.correctAnswer}`);
             
             // Așteaptă 2 secunde și treci la următoarea întrebare
             setTimeout(() => {
@@ -2127,16 +2189,24 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
             this.saveCards();
             this.updateStats();
             
-            // Arată feedback fără butoane
-            this.showFeedback(false, `❌ Greșit! Încearcă din nou.`);
+            // Update hint area with error message
+            hintElement.textContent = `❌ GREȘIT! Încearcă din nou`;
+            hintElement.style.color = '#ef4444';
+            hintElement.style.fontWeight = '700';
+            hintElement.style.fontSize = '1.25rem';
+            
+            // Don't show bottom feedback section
+            // this.showFeedback(false, `❌ Greșit! Încearcă din nou.`);
             
             // Golește input-ul pentru a încerca din nou
             answerInput.value = '';
             answerInput.focus();
             
-            // Ascunde feedback-ul după 2 secunde
+            // Resetează hint-ul după 2 secunde
             setTimeout(() => {
-                document.getElementById('feedbackSection').style.display = 'none';
+                hintElement.style.color = '';
+                hintElement.style.fontWeight = '';
+                hintElement.style.fontSize = '';
             }, 2000);
         }
     }
@@ -2148,11 +2218,21 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
         const userAnswer = answerInput.value.trim().toLowerCase();
         const correctAnswer = this.currentQuestion.correctAnswer.toLowerCase();
         const isCorrect = this.isAnswerCorrect(userAnswer, correctAnswer);
+        
+        const hintElement = document.getElementById('questionHint');
     
         if (isCorrect) {
             this.isAnswered = true;
             this.handleAnswer(true);
-            this.showFeedback(true, `✅ Corect! Răspunsul este: ${this.currentQuestion.correctAnswer}`);
+            
+            // Update hint area with success message
+            hintElement.textContent = `✅ CORECT! Răspunsul: ${this.currentQuestion.correctAnswer}`;
+            hintElement.style.color = '#10b981';
+            hintElement.style.fontWeight = '700';
+            hintElement.style.fontSize = '1.25rem';
+            
+            // Don't show bottom feedback section
+            // this.showFeedback(true, `✅ Corect! Răspunsul este: ${this.currentQuestion.correctAnswer}`);
             
             // Așteaptă 2 secunde și treci la următoarea întrebare
             setTimeout(() => {
@@ -2165,16 +2245,24 @@ document.getElementById('importDictionaryFile').addEventListener('change', (e) =
             this.saveCards();
             this.updateStats();
             
-            // Arată feedback fără butoane
-            this.showFeedback(false, `❌ Greșit! Încearcă din nou.`);
+            // Update hint area with error message
+            hintElement.textContent = `❌ GREȘIT! Încearcă din nou`;
+            hintElement.style.color = '#ef4444';
+            hintElement.style.fontWeight = '700';
+            hintElement.style.fontSize = '1.25rem';
+            
+            // Don't show bottom feedback section
+            // this.showFeedback(false, `❌ Greșit! Încearcă din nou.`);
             
             // Golește textarea pentru a încerca din nou
             answerInput.value = '';
             answerInput.focus();
             
-            // Ascunde feedback-ul după 2 secunde
+            // Resetează hint-ul după 2 secunde
             setTimeout(() => {
-                document.getElementById('feedbackSection').style.display = 'none';
+                hintElement.style.color = '';
+                hintElement.style.fontWeight = '';
+                hintElement.style.fontSize = '';
             }, 2000);
         }
     }
